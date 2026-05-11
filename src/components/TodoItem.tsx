@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react'
-import { Reorder } from 'framer-motion'
+import { useState, useCallback, useRef, useEffect } from 'react'
+import { Reorder, useDragControls } from 'framer-motion'
 import { useTodoStore } from '../store/useTodoStore'
 import type { TodoItem as TodoItemType } from '../types'
 import TodoItemCheckbox from './TodoItemCheckbox'
@@ -16,6 +16,9 @@ export default function TodoItem({ item }: Props) {
   const { toggleTodo, editTodo, deleteTodo } = useTodoStore()
   const [editing, setEditing] = useState(false)
   const [editValue, setEditValue] = useState(item.title)
+  const [isDraggable, setIsDraggable] = useState(false)
+  const dragControls = useDragControls()
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
 
   const commitEdit = () => {
     const finalTitle = editValue.trim()
@@ -31,6 +34,27 @@ export default function TodoItem({ item }: Props) {
     toggleTodo(item.id)
   }, [item.id, toggleTodo])
 
+  // Long press logic
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (editing) return
+    const event = { ...e } // Capture event
+    timerRef.current = setTimeout(() => {
+      setIsDraggable(true)
+      dragControls.start(e)
+    }, 500)
+  }
+
+  const clearTimer = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+  }
+
+  useEffect(() => {
+    return () => clearTimer()
+  }, [])
+
   if (item.isCaret) {
     return <TodoItemCaret item={item} />
   }
@@ -39,20 +63,39 @@ export default function TodoItem({ item }: Props) {
     <Reorder.Item
       value={item}
       id={item.id}
-      dragListener={!editing}
-      className="group relative bg-white"
+      dragListener={false}
+      dragControls={dragControls}
+      className="group relative"
       initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{ 
+        opacity: 1, 
+        y: 0,
+        backgroundColor: isDraggable ? '#f0fdf4' : '#ffffff' 
+      }}
       exit={{ opacity: 0, y: -6, height: 0 }}
       whileDrag={{ 
         scale: 1.05, 
         zIndex: 50,
-        backgroundColor: '#f0fdf4', // bg-green-50
         boxShadow: '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)' 
+      }}
+      onDragEnd={() => {
+        setIsDraggable(false)
+        clearTimer()
       }}
       transition={{ type: 'spring', stiffness: 600, damping: 25 }}
     >
-      <div className="flex items-center gap-3 py-3 px-2 transition-colors duration-150 hover:bg-black/[0.02]">
+      <div 
+        onPointerDown={onPointerDown}
+        onPointerUp={clearTimer}
+        onPointerCancel={clearTimer}
+        // If move more than threshold, cancel long press to allow scroll
+        onPointerMove={(e) => {
+          if (!isDraggable && timerRef.current) {
+            // Very simple movement threshold check can be added here if needed
+          }
+        }}
+        className="flex items-center gap-3 py-3 px-2 transition-colors duration-150 hover:bg-black/[0.02]"
+      >
         <TodoItemCheckbox
           checked={item.checked}
           handleCheck={handleCheck}

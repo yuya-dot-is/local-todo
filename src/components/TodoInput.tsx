@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 interface Props {
   onAdd: (title: string) => void
@@ -13,16 +13,24 @@ export default function TodoInput({ onAdd }: Props) {
     if (inputValue.trim()) {
       onAdd(inputValue.trim())
       setInputValue('')
-      // Reset height
-      if (inputRef.current) {
-        inputRef.current.style.height = '44px'
-        inputRef.current.focus()
-      }
+      
+      // Use setTimeout to ensure focus is applied after state updates and re-renders
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.style.height = '44px'
+          inputRef.current.focus()
+          // Mobile Safari/Chrome sometimes need an extra kick
+          inputRef.current.setSelectionRange(0, 0)
+        }
+      }, 0)
     }
   }
 
+  // Ensure focus is maintained if externally blurred but should be focused
+  // (Optional: can be aggressive, so let's stick to handleAdd for now)
+
   return (
-    <div className={`flex items-center gap-2 p-2 bg-white border-t ${focused ? 'border-accent' : 'border-black/5'}`}>
+    <div className={`flex items-center gap-2 p-2 bg-white border-t transition-shadow ${focused ? 'border-accent shadow-[0_-4px_12px_rgba(0,0,0,0.05)]' : 'border-black/5'}`}>
       <textarea
         ref={inputRef}
         value={inputValue}
@@ -39,7 +47,10 @@ export default function TodoInput({ onAdd }: Props) {
         }}
       />
       <button
-        onMouseDown={(e) => e.preventDefault()} // Prevent losing focus when clicking button
+        onMouseDown={(e) => {
+          // Crucial: prevent the button from taking focus away from textarea
+          e.preventDefault()
+        }}
         onClick={handleAdd}
         disabled={!inputValue.trim()}
         className={`w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-full text-2xl font-light transition-all ${
