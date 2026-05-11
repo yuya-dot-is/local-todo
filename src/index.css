@@ -9,13 +9,20 @@
     color-scheme: light;
   }
 
-  html {
-    @apply bg-surface-0;
+  html, body, #root {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
     @apply bg-surface-0 text-ink;
     -webkit-font-smoothing: antialiased;
+  }
+
+  input, textarea {
+    font-size: 16px !important;
   }
 
   * {

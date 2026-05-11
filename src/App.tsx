@@ -45,7 +45,7 @@ export default function App() {
   const activeTab = tabs[activeTabIndex] ?? tabs[0]
 
   return (
-    <div className="min-h-screen flex flex-col text-ink antialiased">
+    <div className="h-screen flex flex-col text-ink antialiased overflow-hidden">
       {/* 3D background (lazy, non-blocking) */}
       <Suspense fallback={null}>
         <Background3D />
@@ -61,14 +61,14 @@ export default function App() {
       />
 
       {/* main layout */}
-      <div className="flex-1 flex flex-col max-w-2xl w-full mx-auto px-2 sm:px-0 pt-2 pb-8">
+      <div className="flex-1 overflow-y-auto scrollbar-thin pr-1 -mr-1 flex flex-col max-w-2xl w-full mx-auto px-2 sm:px-0 pt-2 pb-8">
 
         {/* tab bar */}
         <TabBar />
 
         {/* tab content card */}
         <main
-          className="flex-1 bg-white/85 backdrop-blur-glass shadow-card"
+          className="flex-1 bg-white/85 backdrop-blur-glass shadow-card flex flex-col min-h-0"
         >
           <AnimatePresence mode="wait">
             <motion.div
@@ -77,7 +77,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -5 }}
               transition={{ duration: 0.16 }}
-              className="p-4 pb-6 min-h-[400px]"
+              className="flex-1 flex flex-col min-h-0 p-4 pb-6"
             >
               {showInfoTab ? (
                 <InfoTab />

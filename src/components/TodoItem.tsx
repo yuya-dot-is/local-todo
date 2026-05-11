@@ -264,14 +264,14 @@ export default function TodoItem({
 
         <div
           className={`
-            flex items-center gap-2 py-2 px-3
+            flex items-center gap-3 py-3 px-4
             transition-colors duration-150
             ${item.isHeader ? 'bg-accent text-white shadow-md' : 'hover:bg-black/[0.03] bg-white'}
           `}
         >
           {/* checkbox with medal animation */}
           {!item.isHeader && (
-            <div className="relative mt-0.5 flex-shrink-0 w-5 h-5">
+            <div className="relative flex-shrink-0 w-8 h-8">
               <CheckParticles active={justChecked} />
               <StarSparkle active={justChecked} />
               <motion.button
@@ -279,7 +279,7 @@ export default function TodoItem({
                 whileTap={{ scale: 0.85 }}
                 onClick={handleCheck}
                 className={`
-                  w-5 h-5 border-2 transition-colors duration-200
+                  w-8 h-8 border-2 transition-colors duration-200
                   flex items-center justify-center
                   ${item.checked
                     ? 'bg-accent border-accent shadow-md'
@@ -297,8 +297,8 @@ export default function TodoItem({
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ scale: 0, opacity: 0 }}
                       transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-                      width="11"
-                      height="9"
+                      width="16"
+                      height="13"
                       viewBox="0 0 11 9"
                       fill="none"
                     >
@@ -392,13 +392,13 @@ export default function TodoItem({
           )}
 
           {/* action buttons */}
-          <div className="flex items-center gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
             <motion.button
               whileTap={{ scale: 0.85 }}
               onClick={() => toggleRole(tabId, item.id)}
               title={item.isHeader ? "タスクに変更" : "ヘッダーに変更"}
               className={`
-                w-6 h-6 flex items-center justify-center text-[10px] font-bold transition-colors
+                w-10 h-10 flex items-center justify-center text-[10px] font-bold transition-colors
                 ${item.isHeader ? 'text-white/70 hover:text-white hover:bg-white/20' : 'text-ink-faint hover:text-accent hover:bg-accent/8'}
               `}
             >
@@ -409,11 +409,11 @@ export default function TodoItem({
               onClick={() => setEditing(true)}
               title="編集"
               className={`
-                w-6 h-6 flex items-center justify-center transition-colors
+                w-10 h-10 flex items-center justify-center transition-colors
                 ${item.isHeader ? 'text-white/70 hover:text-white hover:bg-white/20' : 'text-ink-faint hover:text-ink-muted hover:bg-black/6'}
               `}
             >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <svg width="18" height="18" viewBox="0 0 12 12" fill="none">
                 <path d="M8.5 1.5L10.5 3.5L4 10H2V8L8.5 1.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </motion.button>
@@ -422,11 +422,11 @@ export default function TodoItem({
               onClick={handleDelete}
               title="削除"
               className={`
-                w-6 h-6 flex items-center justify-center transition-colors
+                w-10 h-10 flex items-center justify-center transition-colors
                 ${item.isHeader ? 'text-white/70 hover:text-white hover:bg-white/20' : 'text-ink-faint hover:text-red-500 hover:bg-red-50'}
               `}
             >
-              <svg width="11" height="12" viewBox="0 0 11 12" fill="none">
+              <svg width="16" height="18" viewBox="0 0 11 12" fill="none">
                 <path d="M1 3H10M4 3V2H7V3M2 3L3 10H8L9 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </motion.button>

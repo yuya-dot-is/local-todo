@@ -83,7 +83,7 @@ export default function TodoList({ tabId, todos }: Props) {
 
       <div
         className={`
-          mb-3 flex items-start gap-2 px-3 py-2.5
+          mb-3 flex items-start gap-3 px-4 py-4
           border transition-all duration-200
           ${focused
             ? 'border-accent/40 bg-accent/4 shadow-sm'
@@ -105,7 +105,7 @@ export default function TodoList({ tabId, todos }: Props) {
           }}
           placeholder="タスクを追加…"
           rows={1}
-          className="flex-1 bg-transparent text-sm text-ink placeholder-ink-faint outline-none resize-none py-0.5 leading-relaxed min-h-[1.5rem] max-h-[4.5rem]"
+          className="flex-1 bg-transparent text-base text-ink placeholder-ink-faint outline-none resize-none py-1 leading-relaxed min-h-[1.75rem] max-h-[6rem]"
           onInput={(e) => {
             const target = e.target as HTMLTextAreaElement
             target.style.height = 'auto'
@@ -122,13 +122,13 @@ export default function TodoList({ tabId, todos }: Props) {
           className="w-24 bg-white/50 text-[11px] text-ink px-2 py-1 border border-black/5 outline-none focus:border-accent/30 mt-0.5"
         />
 
-        <div className="flex items-center gap-1 mt-0.5">
+        <div className="flex items-center gap-1.5 mt-0.5">
           <button
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => handleAdd(true)}
             disabled={!inputValue.trim()}
             className={`
-              px-2 py-1 text-[11px] font-bold transition-colors
+              px-3 py-2 text-xs font-bold transition-colors min-h-[44px]
               ${inputValue.trim()
                 ? 'bg-accent/10 text-accent hover:bg-accent/20'
                 : 'bg-black/5 text-ink-faint cursor-not-allowed opacity-50'}
@@ -141,7 +141,7 @@ export default function TodoList({ tabId, todos }: Props) {
             onClick={() => handleAdd(false)}
             disabled={!inputValue.trim()}
             className={`
-              px-3 py-1 text-[11px] font-bold transition-colors
+              px-4 py-2 text-xs font-bold transition-colors min-h-[44px]
               ${inputValue.trim()
                 ? 'bg-accent text-white hover:bg-accent-hover'
                 : 'bg-black/10 text-ink-faint cursor-not-allowed opacity-50'}
@@ -152,7 +152,7 @@ export default function TodoList({ tabId, todos }: Props) {
         </div>
       </div>
 
-      <div className="overflow-y-auto max-h-[60vh] scrollbar-thin pr-1 -mr-1">
+      <div className="flex-1 overflow-y-auto scrollbar-thin pr-1 -mr-1">
         <Reorder.Group
           axis="y"
           values={todos}
