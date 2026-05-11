@@ -54,16 +54,16 @@ export default function TodoItem({ item }: Props) {
       initial={{ opacity: 0 }}
       animate={{
         opacity: 1,
-        backgroundColor: isEditing || isDraggable ? '#f0fdf4' : '#ffffff'
+        backgroundColor: isEditing || isDraggable ? '#f0fdf4' : '#ffffff',
+        scale: isDraggable ? 1.04 : 1,
+        zIndex: isDraggable ? 50 : 0,
+        boxShadow: isDraggable
+          ? '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)'
+          : '0 0 0 0 rgba(0,0,0,0)'
       }}
       exit={{ opacity: 0, height: 0 }}
-      whileDrag={{
-        scale: 1.05,
-        zIndex: 50,
-        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)'
-      }}
       onDragEnd={() => { setIsDraggable(false); clearTimer() }}
-      transition={{ type: 'spring', stiffness: 600, damping: 35, opacity: { duration: 0.1 } }}
+      transition={{ type: 'spring', stiffness: 400, damping: 30, opacity: { duration: 0.1 } }}
     >
       <div
         onPointerDown={onPointerDown}

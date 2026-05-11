@@ -38,12 +38,12 @@ export default function TodoItemCaret({ item }: Props) {
       dragControls={dragControls}
       className={`group py-1 ${isDraggable ? 'select-none' : ''}`}
       animate={{
-        backgroundColor: isDraggable ? '#f0fdf4' : 'transparent'
-      }}
-      whileDrag={{ 
-        scale: 1.05, 
-        zIndex: 50,
-        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)' 
+        backgroundColor: isDraggable ? '#f0fdf4' : 'transparent',
+        scale: isDraggable ? 1.04 : 1,
+        zIndex: isDraggable ? 50 : 0,
+        boxShadow: isDraggable
+          ? '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)'
+          : '0 0 0 0 rgba(0,0,0,0)'
       }}
       onDragEnd={() => {
         setIsDraggable(false)
