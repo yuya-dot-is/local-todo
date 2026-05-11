@@ -13,14 +13,26 @@ interface Props {
 }
 
 export default function TodoItem({ item }: Props) {
-  const { toggleTodo, deleteTodo, editingTodoId, setEditingTodoId, editTodo, setIsDragging } = useTodoStore()
-  const [isDraggable, setIsDraggable] = useState(false)
-  const [editValue, setEditValue] = useState(item.title)
+  const { 
+    toggleTodo, 
+    deleteTodo, 
+    editingTodoId, 
+    setEditingTodoId, 
+    editTodo, 
+    setIsDragging,
+    draggingItemId,
+    setDraggingItemId
+  } = useTodoStore()
+
   const dragControls = useDragControls()
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  
   const isEditing = editingTodoId === item.id
   const isAnyEditing = editingTodoId !== null
+  const isDraggable = draggingItemId === item.id
+
+  const [editValue, setEditValue] = useState(item.title)
 
   const syncTextareaHeight = () => {
     const el = textareaRef.current
@@ -45,15 +57,10 @@ export default function TodoItem({ item }: Props) {
   const handleItemClick = (e: React.MouseEvent) => {
     if (isAnyEditing && !isEditing) return
     if (isEditing) return
-
     e.preventDefault()
     e.stopPropagation()
-
     setEditValue(item.title)
-    flushSync(() => {
-      setEditingTodoId(item.id)
-    })
-
+    flushSync(() => setEditingTodoId(item.id))
     if (textareaRef.current) {
       textareaRef.current.focus()
       textareaRef.current.setSelectionRange(textareaRef.current.value.length, textareaRef.current.value.length)
@@ -65,14 +72,20 @@ export default function TodoItem({ item }: Props) {
     if (isAnyEditing) return
     timerRef.current = setTimeout(() => {
       window.getSelection()?.removeAllRanges()
-      setIsDraggable(true)
-      setIsDragging(true) // アプリ全体をドラッグ中状態にする
+      setDraggingItemId(item.id) // ストアで管理
+      setIsDragging(true)
       dragControls.start(e)
     }, 500)
   }
 
   const onPointerMove = () => {
     if (!isDraggable && timerRef.current) clearTimer()
+  }
+
+  const handleEnd = () => {
+    setDraggingItemId(null)
+    setIsDragging(false)
+    clearTimer()
   }
 
   const clearTimer = () => {
@@ -109,17 +122,13 @@ export default function TodoItem({ item }: Props) {
           : '0 0 0 0 rgba(0,0,0,0)'
       }}
       exit={{ opacity: 0, height: 0 }}
-      onDragEnd={() => {
-        setIsDraggable(false)
-        setIsDragging(false) // ドラッグ終了
-        clearTimer()
-      }}
+      onDragEnd={handleEnd}
       transition={{ type: 'spring', stiffness: 400, damping: 30, opacity: { duration: 0.15 } }}
     >
       <div
         onPointerDown={onPointerDown}
-        onPointerUp={clearTimer}
-        onPointerCancel={clearTimer}
+        onPointerUp={handleEnd} // 指を離した時にもリセット
+        onPointerCancel={handleEnd} // 中断された時もリセット
         onPointerMove={onPointerMove}
         onClick={handleItemClick}
         className={`flex items-center gap-3 py-3 px-2 transition-colors duration-150${isEditing ? ' ring-1 ring-inset ring-accent/30' : ' hover:bg-black/[0.02]'}${dimmed ? ' pointer-events-none' : ''}`}

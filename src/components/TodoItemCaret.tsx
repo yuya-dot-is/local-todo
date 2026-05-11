@@ -9,11 +9,13 @@ interface Props {
 }
 
 export default function TodoItemCaret({ item }: Props) {
-  const { editingTodoId, addTodo, setIsDragging } = useTodoStore()
+  const { editingTodoId, addTodo, setIsDragging, draggingItemId, setDraggingItemId } = useTodoStore()
+  
   const isAnyEditing = editingTodoId !== null
+  const isDraggable = draggingItemId === item.id
+  
   const [isInputMode, setIsInputMode] = useState(false)
   const [inputValue, setInputValue] = useState('')
-  const [isDraggable, setIsDraggable] = useState(false)
   const dragControls = useDragControls()
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -38,14 +40,20 @@ export default function TodoItemCaret({ item }: Props) {
     if (isAnyEditing || isInputMode) return
     timerRef.current = setTimeout(() => {
       window.getSelection()?.removeAllRanges()
-      setIsDraggable(true)
-      setIsDragging(true) // ここでアプリ全体を select-none に切り替え
+      setDraggingItemId(item.id)
+      setIsDragging(true)
       dragControls.start(e)
     }, 500)
   }
 
   const onPointerMove = () => {
     if (!isDraggable && timerRef.current) clearTimer()
+  }
+
+  const handleEnd = () => {
+    setDraggingItemId(null)
+    setIsDragging(false)
+    clearTimer()
   }
 
   const clearTimer = () => {
@@ -73,11 +81,7 @@ export default function TodoItemCaret({ item }: Props) {
           ? '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)'
           : '0 0 0 0 rgba(0,0,0,0)'
       }}
-      onDragEnd={() => {
-        setIsDraggable(false)
-        setIsDragging(false) // ドラッグ終了をアプリに通知
-        clearTimer()
-      }}
+      onDragEnd={handleEnd}
     >
       {isInputMode ? (
         <div className="flex items-center gap-2 px-2 py-2 bg-accent/5 ring-1 ring-inset ring-accent/30 min-h-[48px]">
@@ -111,15 +115,14 @@ export default function TodoItemCaret({ item }: Props) {
         <div
           data-caret="true"
           onPointerDown={onPointerDown}
-          onPointerUp={clearTimer}
-          onPointerCancel={clearTimer}
+          onPointerUp={handleEnd}
+          onPointerCancel={handleEnd}
           onPointerMove={onPointerMove}
           className="flex items-center px-2 h-10 hover:bg-black/[0.02] transition-colors"
         >
           <div className="flex-1 h-px bg-accent/10 mr-4" />
           <button
             onClick={handlePlusClick}
-            // デザイン調整: w-8 h-8 に小型化、ボーダーを細く (border)、背景色 (bg-accent/[0.03]) を追加
             className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full border border-accent/30 text-accent/60 bg-accent/[0.03] hover:border-accent/60 hover:text-accent hover:bg-accent/10 transition-all text-xl font-light active:scale-90"
           >
             +

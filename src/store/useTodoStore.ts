@@ -16,9 +16,11 @@ export const useTodoStore = create<TodoStore>()(
       todos: initialTodos(),
       editingTodoId: null,
       isDragging: false,
+      draggingItemId: null,
 
       setEditingTodoId: (id) => set({ editingTodoId: id }),
       setIsDragging: (isDragging) => set({ isDragging }),
+      setDraggingItemId: (id) => set({ draggingItemId: id }),
 
       addTodo: (title) =>
         set((s) => {
