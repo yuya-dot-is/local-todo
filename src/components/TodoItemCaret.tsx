@@ -81,6 +81,15 @@ export default function TodoItemCaret({ item }: Props) {
           ? '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)'
           : '0 0 0 0 rgba(0,0,0,0)'
       }}
+      whileDrag={{
+        zIndex: 100,
+        scale: 1.04,
+        backgroundColor: '#f0fdf4',
+        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)'
+      }}
+      transition={{ 
+        zIndex: { duration: 0 } 
+      }}
       onDragEnd={handleEnd}
     >
       {isInputMode ? (
@@ -91,11 +100,6 @@ export default function TodoItemCaret({ item }: Props) {
             onChange={(e) => {
               setInputValue(e.target.value)
             }}
-            onInput={(e) => {
-              const el = e.target as HTMLTextAreaElement
-              el.style.height = 'auto'
-              el.style.height = `${el.scrollHeight}px`
-            }}
             onBlur={handleSubmit}
             onKeyDown={(e) => {
               if (e.nativeEvent.isComposing) return
@@ -104,6 +108,11 @@ export default function TodoItemCaret({ item }: Props) {
             placeholder="タスクを追加…"
             rows={1}
             className="flex-1 bg-transparent text-sm text-ink placeholder-ink-faint outline-none resize-none leading-snug block"
+            onInput={(e) => {
+              const el = e.target as HTMLTextAreaElement
+              el.style.height = 'auto'
+              el.style.height = `${el.scrollHeight}px`
+            }}
           />
           <button
             onMouseDown={(e) => e.preventDefault()}
