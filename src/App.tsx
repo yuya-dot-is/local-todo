@@ -19,15 +19,15 @@ function InfoTab() {
           <span style={{ color: '#1a2332' }}> todo</span>
         </h1>
       </div>
-      
+
       <DataNotice />
-      
-      <div className="max-w-md text-sm text-ink-muted leading-relaxed space-y-4 bg-surface-2/50 p-6 rounded-2xl">
+
+      <div className="max-w-md text-sm text-ink-muted leading-relaxed space-y-4 bg-surface-2/50 p-6">
         <p>
           <strong className="text-ink font-bold">local todo</strong> は、あなたのブラウザ内（ローカル）にデータを保存するタスク管理アプリです。
           外部のサーバーへデータが送信されることはなく、安全かつ高速に動作します。
         </p>
-        <div className="text-left bg-white p-4 rounded-xl shadow-sm border border-black/5">
+        <div className="text-left bg-white p-4 shadow-sm border border-black/5">
           <h3 className="font-bold text-ink mb-2">💡 使い方・TIPS</h3>
           <ul className="list-disc list-inside space-y-1">
             <li>タスクを掴んで上下にドラッグ＆ドロップで並べ替え</li>
@@ -68,10 +68,7 @@ export default function App() {
 
         {/* tab content card */}
         <main
-          className="flex-1 rounded-b-2xl rounded-tr-2xl
-            bg-white/85 backdrop-blur-glass
-            border border-black/8 border-t-0
-            shadow-card"
+          className="flex-1 bg-white/85 backdrop-blur-glass shadow-card"
         >
           <AnimatePresence mode="wait">
             <motion.div
