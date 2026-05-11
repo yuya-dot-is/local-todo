@@ -14,36 +14,19 @@ export default function TodoList({ tabId, todos }: Props) {
   const [inputValue, setInputValue] = useState('')
   const [focused, setFocused] = useState(false)
 
-  const handleAdd = () => {
+  const handleAdd = (isHeader: boolean = false) => {
     if (inputValue.trim()) {
-      addTodo(tabId, inputValue.trim())
+      addTodo(tabId, inputValue.trim(), isHeader)
       setInputValue('')
     }
   }
 
   return (
     <div className="flex flex-col gap-0.5">
-      <Reorder.Group
-        axis="y"
-        values={todos}
-        onReorder={(newTodos) => reorderTodos(tabId, newTodos)}
-        className="flex flex-col gap-0.5"
-      >
-        <AnimatePresence initial={false}>
-          {todos.map((todo) => (
-            <TodoItemComponent
-              key={todo.id}
-              tabId={tabId}
-              item={todo}
-            />
-          ))}
-        </AnimatePresence>
-      </Reorder.Group>
-
       <motion.div
         layout
         className={`
-          mt-3 flex items-center gap-2 rounded-xl px-3 py-2.5
+          mb-3 flex items-center gap-2 rounded-xl px-3 py-2.5
           border transition-all duration-200
           ${focused
             ? 'border-accent/40 bg-accent/4 shadow-sm'
@@ -58,27 +41,58 @@ export default function TodoList({ tabId, todos }: Props) {
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') handleAdd()
+            if (e.key === 'Enter') handleAdd(false)
           }}
           placeholder="タスクを追加…"
           className="flex-1 bg-transparent text-sm text-ink placeholder-ink-faint outline-none"
         />
         <AnimatePresence>
           {inputValue && (
-            <motion.button
+            <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={handleAdd}
-              className="px-3 py-1 rounded-lg bg-accent text-white text-xs font-medium
-                hover:bg-accent-hover transition-colors"
+              className="flex items-center gap-1"
             >
-              追加
-            </motion.button>
+              <button
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => handleAdd(true)}
+                className="px-2 py-1 rounded-md bg-accent/10 text-accent text-[11px] font-bold hover:bg-accent/20 transition-colors"
+              >
+                + ヘッダー
+              </button>
+              <button
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => handleAdd(false)}
+                className="px-3 py-1 rounded-md bg-accent text-white text-[11px] font-bold hover:bg-accent-hover transition-colors"
+              >
+                + タスク
+              </button>
+            </motion.div>
           )}
         </AnimatePresence>
       </motion.div>
+
+      <div className="overflow-y-auto max-h-[60vh] scrollbar-thin pr-1 -mr-1">
+        <Reorder.Group
+          axis="y"
+          values={todos}
+          onReorder={(newTodos) => reorderTodos(tabId, newTodos)}
+          className="flex flex-col gap-0.5"
+        >
+          <AnimatePresence initial={false}>
+            {todos.map((todo, idx) => (
+              <TodoItemComponent
+                key={todo.id}
+                tabId={tabId}
+                item={todo}
+                allTodos={todos}
+                index={idx}
+              />
+            ))}
+          </AnimatePresence>
+        </Reorder.Group>
+      </div>
     </div>
   )
 }

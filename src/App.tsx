@@ -10,23 +10,10 @@ const Background3D = lazy(() => import('./components/Background3D'))
 function Logo() {
   return (
     <div className="flex items-center gap-3">
-      {/* Icon mark */}
-      <div className="relative w-10 h-10 flex-shrink-0">
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="40" height="40" rx="11" fill="#16a34a"/>
-          <path
-            d="M10 20.5L16.5 27L30 13"
-            stroke="white"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
-      {/* Title in Pacifico */}
+      {/* Title in Caveat */}
       <h1
-        className="text-[2rem] leading-none tracking-wide"
-        style={{ fontFamily: 'Pacifico, cursive' }}
+        className="text-[2.5rem] leading-none tracking-wide"
+        style={{ fontFamily: 'Shadows Into Light Two, cursive' }}
       >
         <span style={{ color: '#16a34a' }}>local</span>
         <span style={{ color: '#1a2332' }}> todo</span>

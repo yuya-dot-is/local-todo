@@ -3,6 +3,8 @@ export interface TodoItem {
   title: string
   checked: boolean
   createdAt: number
+  isHeader?: boolean
+  isCaret?: boolean
 }
 
 export interface Tab {
@@ -19,9 +21,10 @@ export interface TodoStore {
   deleteTab: (tabId: string) => void
   reorderTabs: (tabs: Tab[]) => void
   setActiveTab: (index: number) => void
-  addTodo: (tabId: string, title: string) => void
+  addTodo: (tabId: string, title: string, isHeader?: boolean) => void
   editTodo: (tabId: string, todoId: string, title: string) => void
   toggleTodo: (tabId: string, todoId: string) => void
+  toggleRole: (tabId: string, todoId: string) => void
   deleteTodo: (tabId: string, todoId: string) => void
   reorderTodos: (tabId: string, newTodos: TodoItem[]) => void
 }

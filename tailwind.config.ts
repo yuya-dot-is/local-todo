@@ -6,7 +6,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        logo: ['Pacifico', 'cursive'],
+        logo: ['Damion', 'cursive'],
       },
       colors: {
         surface: {

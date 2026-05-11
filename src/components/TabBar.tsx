@@ -82,8 +82,10 @@ export default function TabBar() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
-                        if (isActive && idx > 0) setActiveTab(idx - 1)
-                        deleteTab(tab.id)
+                        if (window.confirm(`タブ「${tab.name}」を削除してもよろしいですか？`)) {
+                          if (isActive && idx > 0) setActiveTab(idx - 1)
+                          deleteTab(tab.id)
+                        }
                       }}
                       className="ml-1 w-4 h-4 flex items-center justify-center rounded-full
                         text-ink-faint hover:text-ink-muted hover:bg-black/8 transition-colors"

@@ -6,7 +6,13 @@ import type { Tab, TodoItem, TodoStore } from '../types'
 const defaultTab = (): Tab => ({
   id: nanoid(),
   name: 'My Tasks',
-  todos: [],
+  todos: [{
+    id: `caret-${nanoid()}`,
+    title: '',
+    checked: false,
+    createdAt: Date.now(),
+    isCaret: true,
+  }],
 })
 
 export const useTodoStore = create<TodoStore>()(
@@ -38,17 +44,34 @@ export const useTodoStore = create<TodoStore>()(
 
       setActiveTab: (index) => set({ activeTabIndex: index }),
 
-      addTodo: (tabId, title) =>
+      addTodo: (tabId, title, isHeader = false) =>
         set((s) => ({
           tabs: s.tabs.map((tab) => {
             if (tab.id !== tabId) return tab
+            
+            // Ensure caret exists
+            let todos = [...tab.todos]
+            let caretIdx = todos.findIndex(t => t.isCaret)
+            if (caretIdx === -1) {
+              const newCaret: TodoItem = {
+                id: `caret-${nanoid()}`, title: '', checked: false, createdAt: Date.now(), isCaret: true
+              }
+              todos.push(newCaret)
+              caretIdx = todos.length - 1
+            }
+
             const newItem: TodoItem = {
               id: nanoid(),
               title,
               checked: false,
               createdAt: Date.now(),
+              isHeader,
             }
-            return { ...tab, todos: [...tab.todos, newItem] }
+            
+            // Insert exactly before the caret
+            todos.splice(caretIdx, 0, newItem)
+
+            return { ...tab, todos }
           }),
         })),
 
@@ -66,6 +89,15 @@ export const useTodoStore = create<TodoStore>()(
           tabs: s.tabs.map((tab) => {
             if (tab.id !== tabId) return tab
             const todos = tab.todos.map(t => t.id === todoId ? { ...t, checked: !t.checked } : t)
+            return { ...tab, todos }
+          }),
+        })),
+
+      toggleRole: (tabId, todoId) =>
+        set((s) => ({
+          tabs: s.tabs.map((tab) => {
+            if (tab.id !== tabId) return tab
+            const todos = tab.todos.map(t => t.id === todoId ? { ...t, isHeader: !t.isHeader } : t)
             return { ...tab, todos }
           }),
         })),
