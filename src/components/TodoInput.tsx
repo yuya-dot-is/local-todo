@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 
 interface Props {
   onAdd: (title: string) => void
@@ -13,7 +13,7 @@ export default function TodoInput({ onAdd }: Props) {
     if (inputValue.trim()) {
       onAdd(inputValue.trim())
       setInputValue('')
-      
+
       // Use setTimeout to ensure focus is applied after state updates and re-renders
       setTimeout(() => {
         if (inputRef.current) {
@@ -53,9 +53,8 @@ export default function TodoInput({ onAdd }: Props) {
         }}
         onClick={handleAdd}
         disabled={!inputValue.trim()}
-        className={`w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-full text-2xl font-light transition-all ${
-          inputValue.trim() ? 'bg-accent text-white shadow-md active:scale-95' : 'bg-black/5 text-ink-faint'
-        }`}
+        className={`w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-full text-2xl font-light transition-all ${inputValue.trim() ? 'bg-accent text-white shadow-md active:scale-95' : 'bg-black/5 text-ink-faint'
+          }`}
       >
         +
       </button>

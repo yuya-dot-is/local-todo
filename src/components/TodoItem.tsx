@@ -66,16 +66,16 @@ export default function TodoItem({ item }: Props) {
       dragControls={dragControls}
       className="group relative"
       initial={{ opacity: 0, y: 10 }}
-      animate={{ 
-        opacity: 1, 
+      animate={{
+        opacity: 1,
         y: 0,
-        backgroundColor: isDraggable ? '#f0fdf4' : '#ffffff' 
+        backgroundColor: isDraggable ? '#f0fdf4' : '#ffffff'
       }}
       exit={{ opacity: 0, y: -6, height: 0 }}
-      whileDrag={{ 
-        scale: 1.05, 
+      whileDrag={{
+        scale: 1.05,
         zIndex: 50,
-        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)' 
+        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)'
       }}
       onDragEnd={() => {
         setIsDraggable(false)
@@ -83,12 +83,12 @@ export default function TodoItem({ item }: Props) {
       }}
       transition={{ type: 'spring', stiffness: 600, damping: 25 }}
     >
-      <div 
+      <div
         onPointerDown={onPointerDown}
         onPointerUp={clearTimer}
         onPointerCancel={clearTimer}
         // If move more than threshold, cancel long press to allow scroll
-        onPointerMove={(e) => {
+        onPointerMove={() => {
           if (!isDraggable && timerRef.current) {
             // Very simple movement threshold check can be added here if needed
           }
