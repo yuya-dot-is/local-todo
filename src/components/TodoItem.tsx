@@ -1,11 +1,10 @@
 import { useCallback, useRef, useEffect, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { Reorder, useDragControls } from 'framer-motion'
+import { Reorder, useDragControls, motion, useMotionValue } from 'framer-motion'
 import { useTodoStore } from '../store/useTodoStore'
 import type { TodoItem as TodoItemType } from '../types'
 import TodoItemCheckbox from './TodoItemCheckbox'
 import TodoItemCaret from './TodoItemCaret'
-import TodoItemActions from './TodoItemActions'
 import TodoItemTitle from './TodoItemTitle'
 
 interface Props {
@@ -25,6 +24,7 @@ export default function TodoItem({ item }: Props) {
   } = useTodoStore()
 
   const dragControls = useDragControls()
+  const x = useMotionValue(0)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   
@@ -55,10 +55,14 @@ export default function TodoItem({ item }: Props) {
   }, [item.id, toggleTodo, isAnyEditing])
 
   const handleItemClick = (e: React.MouseEvent) => {
+    // スワイプされている時は編集モードに入らないようにする
+    if (Math.abs(x.get()) > 10) return
     if (isAnyEditing && !isEditing) return
     if (isEditing) return
+
     e.preventDefault()
     e.stopPropagation()
+
     setEditValue(item.title)
     flushSync(() => setEditingTodoId(item.id))
     if (textareaRef.current) {
@@ -71,8 +75,10 @@ export default function TodoItem({ item }: Props) {
   const onPointerDown = (e: React.PointerEvent) => {
     if (isAnyEditing) return
     timerRef.current = setTimeout(() => {
+      // ドラッグが始まったらスワイプをリセット
+      x.set(0)
       window.getSelection()?.removeAllRanges()
-      setDraggingItemId(item.id) // ストアで管理
+      setDraggingItemId(item.id)
       setIsDragging(true)
       dragControls.start(e)
     }, 500)
@@ -110,7 +116,7 @@ export default function TodoItem({ item }: Props) {
       layout
       dragListener={false}
       dragControls={dragControls}
-      className="group relative"
+      className="group relative overflow-hidden touch-pan-y"
       initial={{ opacity: 0 }}
       animate={{
         opacity: dimmed ? 0.3 : 1,
@@ -125,13 +131,31 @@ export default function TodoItem({ item }: Props) {
       onDragEnd={handleEnd}
       transition={{ type: 'spring', stiffness: 400, damping: 30, opacity: { duration: 0.15 } }}
     >
-      <div
+      {/* 背後の削除ボタン */}
+      <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center bg-red-500 text-white font-bold">
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            deleteTodo(item.id)
+          }}
+          className="w-full h-full flex items-center justify-center active:bg-red-600 transition-colors"
+        >
+          削除
+        </button>
+      </div>
+
+      {/* スワイプ可能なコンテンツレイヤー */}
+      <motion.div
+        style={{ x }}
+        drag={isEditing || isDraggable ? false : "x"}
+        dragConstraints={{ left: -80, right: 0 }}
+        dragElastic={0.05}
         onPointerDown={onPointerDown}
-        onPointerUp={handleEnd} // 指を離した時にもリセット
-        onPointerCancel={handleEnd} // 中断された時もリセット
+        onPointerUp={handleEnd}
+        onPointerCancel={handleEnd}
         onPointerMove={onPointerMove}
         onClick={handleItemClick}
-        className={`flex items-center gap-3 py-3 px-2 transition-colors duration-150${isEditing ? ' ring-1 ring-inset ring-accent/30' : ' hover:bg-black/[0.02]'}${dimmed ? ' pointer-events-none' : ''}`}
+        className={`relative z-10 bg-inherit flex items-center gap-3 py-3 px-2 transition-colors duration-150${isEditing ? ' ring-1 ring-inset ring-accent/30' : ' hover:bg-black/[0.02]'}${dimmed ? ' pointer-events-none' : ''}`}
       >
         {!isEditing && (
           <div className="flex-shrink-0">
@@ -163,11 +187,7 @@ export default function TodoItem({ item }: Props) {
             <TodoItemTitle title={item.title} checked={item.checked} />
           )}
         </div>
-
-        {!isAnyEditing && (
-          <TodoItemActions onDelete={() => deleteTodo(item.id)} />
-        )}
-      </div>
+      </motion.div>
     </Reorder.Item>
   )
 }
