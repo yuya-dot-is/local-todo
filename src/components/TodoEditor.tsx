@@ -4,49 +4,29 @@ import { useTodoStore } from '../store/useTodoStore'
 export default function TodoEditor() {
   const { todos, editingTodoId, setEditingTodoId, editTodo } = useTodoStore()
   const editingTodo = todos.find(t => t.id === editingTodoId)
-  
   const [inputValue, setInputValue] = useState('')
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  // Sync internal value when editingTodoId changes
   useEffect(() => {
-    if (editingTodo) {
-      setInputValue(editingTodo.title)
-      // Focus after a short delay to ensure UI is ready
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.focus()
-          inputRef.current.setSelectionRange(editingTodo.title.length, editingTodo.title.length)
-        }
-      }, 0)
-    }
-  }, [editingTodoId, editingTodo])
+    if (!editingTodo) return
+    setInputValue(editingTodo.title)
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus()
+        const len = editingTodo.title.length
+        inputRef.current.setSelectionRange(len, len)
+      }
+    }, 0)
+  }, [editingTodoId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleUpdate = () => {
     if (!editingTodoId) return
-    
-    const finalValue = inputValue.trim()
-    if (finalValue) {
-      editTodo(editingTodoId, finalValue)
-    }
+    const value = inputValue.trim()
+    if (value) editTodo(editingTodoId, value)
 
-    // Move to next task logic
     const currentIndex = todos.findIndex(t => t.id === editingTodoId)
-    // Find next task (not caret)
-    let nextIndex = -1
-    for (let i = currentIndex + 1; i < todos.length; i++) {
-      if (!todos[i].isCaret) {
-        nextIndex = i
-        break
-      }
-    }
-
-    if (nextIndex !== -1) {
-      setEditingTodoId(todos[nextIndex].id)
-    } else {
-      setEditingTodoId(null)
-      // Keyboard will naturally close if focus is not moved
-    }
+    const next = todos.slice(currentIndex + 1).find(t => !t.isCaret)
+    setEditingTodoId(next ? next.id : null)
   }
 
   if (!editingTodo) return null
@@ -61,9 +41,9 @@ export default function TodoEditor() {
         rows={1}
         className="flex-1 bg-white text-base text-ink outline-none resize-none px-4 py-2.5 rounded-2xl leading-tight min-h-[44px] max-h-[120px] border border-accent/20"
         onInput={(e) => {
-          const target = e.target as HTMLTextAreaElement
-          target.style.height = 'auto'
-          target.style.height = `${target.scrollHeight}px`
+          const el = e.target as HTMLTextAreaElement
+          el.style.height = 'auto'
+          el.style.height = `${el.scrollHeight}px`
         }}
       />
       <button
