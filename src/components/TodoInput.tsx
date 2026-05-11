@@ -16,13 +16,7 @@ export default function TodoInput({ onAdd }: Props) {
   }
 
   return (
-    <div
-      className={`
-        flex items-center gap-2 p-2
-        bg-white border-t transition-all duration-200
-        ${focused ? 'border-accent shadow-[0_-4px_12px_rgba(0,0,0,0.05)]' : 'border-black/5'}
-      `}
-    >
+    <div className={`flex items-center gap-2 p-2 bg-white border-t ${focused ? 'border-accent' : 'border-black/5'}`}>
       <textarea
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
@@ -37,24 +31,19 @@ export default function TodoInput({ onAdd }: Props) {
         }}
         placeholder="タスクを追加…"
         rows={1}
-        className="flex-1 bg-surface-2 text-base text-ink placeholder-ink-faint outline-none resize-none px-4 py-2.5 rounded-full leading-tight min-h-[44px] max-h-[120px]"
+        className="flex-1 bg-surface-2 text-base text-ink placeholder-ink-faint outline-none resize-none px-4 py-2 rounded-full leading-tight min-h-[44px] max-h-[120px]"
         onInput={(e) => {
           const target = e.target as HTMLTextAreaElement
           target.style.height = 'auto'
           target.style.height = `${target.scrollHeight}px`
         }}
       />
-
       <button
-        onMouseDown={(e) => e.preventDefault()}
         onClick={handleAdd}
         disabled={!inputValue.trim()}
-        className={`
-          w-11 h-11 flex items-center justify-center rounded-full text-2xl font-light transition-all
-          ${inputValue.trim()
-            ? 'bg-accent text-white shadow-md active:scale-95'
-            : 'bg-black/5 text-ink-faint cursor-not-allowed'}
-        `}
+        className={`w-11 h-11 flex items-center justify-center rounded-full text-2xl font-light transition-all ${
+          inputValue.trim() ? 'bg-accent text-white shadow-md active:scale-95' : 'bg-black/5 text-ink-faint'
+        }`}
       >
         +
       </button>

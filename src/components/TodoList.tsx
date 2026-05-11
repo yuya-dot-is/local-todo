@@ -17,7 +17,7 @@ export default function TodoList({ todos }: Props) {
         <Reorder.Group
           axis="y"
           values={todos}
-          onReorder={(newTodos) => reorderTodos(newTodos)}
+          onReorder={reorderTodos}
           className="flex flex-col gap-0.5"
         >
           <AnimatePresence initial={false}>
@@ -32,9 +32,7 @@ export default function TodoList({ todos }: Props) {
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-white via-white/95 to-transparent pt-8">
-        <TodoInput
-          onAdd={(title) => addTodo(title)}
-        />
+        <TodoInput onAdd={addTodo} />
       </div>
     </div>
   )

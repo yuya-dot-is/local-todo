@@ -2,14 +2,11 @@ export interface TodoItem {
   id: string
   title: string
   checked: boolean
-  createdAt: number
   isCaret: boolean
 }
 
 export interface TodoStore {
   todos: TodoItem[]
-  showInfoTab: boolean
-  setShowInfoTab: (show: boolean) => void
   addTodo: (title: string) => void
   editTodo: (todoId: string, title: string) => void
   toggleTodo: (todoId: string) => void

@@ -7,7 +7,6 @@ const initialTodos = (): TodoItem[] => [{
   id: `caret-${nanoid()}`,
   title: '',
   checked: false,
-  createdAt: Date.now(),
   isCaret: true,
 }]
 
@@ -15,9 +14,6 @@ export const useTodoStore = create<TodoStore>()(
   persist(
     (set) => ({
       todos: initialTodos(),
-      showInfoTab: false,
-
-      setShowInfoTab: (show) => set({ showInfoTab: show }),
 
       addTodo: (title) =>
         set((s) => {
@@ -28,7 +24,6 @@ export const useTodoStore = create<TodoStore>()(
               id: `caret-${nanoid()}`,
               title: '',
               checked: false,
-              createdAt: Date.now(),
               isCaret: true
             }
             todos.push(newCaret)
@@ -39,7 +34,6 @@ export const useTodoStore = create<TodoStore>()(
             id: nanoid(),
             title,
             checked: false,
-            createdAt: Date.now(),
             isCaret: false,
           }
 

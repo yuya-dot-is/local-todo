@@ -10,13 +10,9 @@ import TodoItemTitle from './TodoItemTitle'
 
 interface Props {
   item: TodoItemType
-  allTodos?: TodoItemType[]
-  index?: number
 }
 
-export default function TodoItem({
-  item,
-}: Props) {
+export default function TodoItem({ item }: Props) {
   const { toggleTodo, editTodo, deleteTodo } = useTodoStore()
   const [editing, setEditing] = useState(false)
   const [editValue, setEditValue] = useState(item.title)
@@ -35,10 +31,6 @@ export default function TodoItem({
     toggleTodo(item.id)
   }, [item.id, toggleTodo])
 
-  const handleDelete = () => {
-    deleteTodo(item.id)
-  }
-
   if (item.isCaret) {
     return <TodoItemCaret item={item} />
   }
@@ -49,44 +41,41 @@ export default function TodoItem({
       id={item.id}
       dragListener={!editing}
       className="group relative"
-      initial={{ opacity: 0, y: 10, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -6, scale: 0.94, height: 0, transition: { duration: 0.2 } }}
-      whileDrag={{ scale: 1.02, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)' }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6, height: 0 }}
       transition={{ type: 'spring', stiffness: 600, damping: 25 }}
     >
-      <div className="relative">
-        <div className="flex items-center gap-3 py-3 px-2 transition-colors duration-150 hover:bg-black/[0.03] bg-white">
-          <TodoItemCheckbox
-            checked={item.checked}
-            handleCheck={handleCheck}
-          />
+      <div className="flex items-center gap-3 py-3 px-2 transition-colors duration-150 hover:bg-black/[0.03] bg-white">
+        <TodoItemCheckbox
+          checked={item.checked}
+          handleCheck={handleCheck}
+        />
 
-          {editing ? (
-            <TodoItemEditor
-              editValue={editValue}
-              setEditValue={setEditValue}
-              commitEdit={commitEdit}
-              cancelEdit={() => {
-                setEditValue(item.title)
-                setEditing(false)
-              }}
+        {editing ? (
+          <TodoItemEditor
+            editValue={editValue}
+            setEditValue={setEditValue}
+            commitEdit={commitEdit}
+            cancelEdit={() => {
+              setEditValue(item.title)
+              setEditing(false)
+            }}
+          />
+        ) : (
+          <div className="flex-1 min-w-0">
+            <TodoItemTitle
+              title={item.title}
+              checked={item.checked}
+              onDoubleClick={() => setEditing(true)}
             />
-          ) : (
-            <div className="flex-1 flex flex-col min-w-0">
-              <TodoItemTitle
-                title={item.title}
-                checked={item.checked}
-                onDoubleClick={() => setEditing(true)}
-              />
-            </div>
-          )}
+          </div>
+        )}
 
-          <TodoItemActions
-            onEdit={() => setEditing(true)}
-            onDelete={handleDelete}
-          />
-        </div>
+        <TodoItemActions
+          onEdit={() => setEditing(true)}
+          onDelete={() => deleteTodo(item.id)}
+        />
       </div>
     </Reorder.Item>
   )
