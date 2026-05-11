@@ -23,10 +23,9 @@ export default function TodoList({ tabId, todos }: Props) {
 
   return (
     <div className="flex flex-col gap-0.5">
-      <motion.div
-        layout
+      <div
         className={`
-          mb-3 flex items-center gap-2 rounded-xl px-3 py-2.5
+          mb-3 flex items-center gap-2 px-3 py-2.5
           border transition-all duration-200
           ${focused
             ? 'border-accent/40 bg-accent/4 shadow-sm'
@@ -46,32 +45,35 @@ export default function TodoList({ tabId, todos }: Props) {
           placeholder="タスクを追加…"
           className="flex-1 bg-transparent text-sm text-ink placeholder-ink-faint outline-none"
         />
-        <AnimatePresence>
-          {inputValue && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="flex items-center gap-1"
-            >
-              <button
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => handleAdd(true)}
-                className="px-2 py-1 rounded-md bg-accent/10 text-accent text-[11px] font-bold hover:bg-accent/20 transition-colors"
-              >
-                + ヘッダー
-              </button>
-              <button
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => handleAdd(false)}
-                className="px-3 py-1 rounded-md bg-accent text-white text-[11px] font-bold hover:bg-accent-hover transition-colors"
-              >
-                + タスク
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
+        <div className="flex items-center gap-1">
+          <button
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => handleAdd(true)}
+            disabled={!inputValue.trim()}
+            className={`
+              px-2 py-1 text-[11px] font-bold transition-colors
+              ${inputValue.trim() 
+                ? 'bg-accent/10 text-accent hover:bg-accent/20' 
+                : 'bg-black/5 text-ink-faint cursor-not-allowed opacity-50'}
+            `}
+          >
+            + ヘッダー
+          </button>
+          <button
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => handleAdd(false)}
+            disabled={!inputValue.trim()}
+            className={`
+              px-3 py-1 text-[11px] font-bold transition-colors
+              ${inputValue.trim() 
+                ? 'bg-accent text-white hover:bg-accent-hover' 
+                : 'bg-black/10 text-ink-faint cursor-not-allowed opacity-50'}
+            `}
+          >
+            + タスク
+          </button>
+        </div>
+      </div>
 
       <div className="overflow-y-auto max-h-[60vh] scrollbar-thin pr-1 -mr-1">
         <Reorder.Group

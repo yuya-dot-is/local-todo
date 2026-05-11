@@ -64,6 +64,7 @@ export default function TabBar() {
                 <Reorder.Item
                   key={tab.id}
                   value={tab}
+                  dragListener={editingId !== tab.id}
                 >
                   <motion.div
                     layout
@@ -110,7 +111,7 @@ export default function TabBar() {
                             deleteTab(tab.id)
                           }
                         }}
-                        className="ml-1 w-4 h-4 flex items-center justify-center rounded-full
+                        className="ml-1 w-4 h-4 flex items-center justify-center
                         text-ink-faint hover:text-ink-muted hover:bg-black/8 transition-colors"
                         aria-label="Delete tab"
                       >
@@ -128,7 +129,7 @@ export default function TabBar() {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={addTab}
-          className="ml-1 w-8 h-8 flex items-center justify-center rounded-lg
+          className="ml-1 w-8 h-8 flex items-center justify-center
           text-ink-faint hover:text-ink-muted hover:bg-black/8 transition-colors text-lg flex-shrink-0"
           aria-label="Add tab"
         >

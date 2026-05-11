@@ -178,7 +178,7 @@ export default function TodoItem({
         id={item.id}
         className="group py-0.5"
       >
-        <div className="flex items-center gap-2 px-2 hover:bg-black/[0.03] rounded-lg transition-colors group">
+        <div className="flex items-center gap-2 px-2 hover:bg-black/[0.03] transition-colors group">
           <div className="flex-1 h-0.5 bg-accent/40 rounded-full relative ml-2">
             <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-accent/40" />
           </div>
@@ -208,7 +208,7 @@ export default function TodoItem({
 
         <div
           className={`
-            flex items-center gap-2 py-2 px-3 rounded-xl
+            flex items-center gap-2 py-2 px-3
             transition-colors duration-150
             ${item.isHeader ? 'bg-accent text-white shadow-md' : 'hover:bg-black/[0.03] bg-white'}
           `}
@@ -223,7 +223,7 @@ export default function TodoItem({
                 whileTap={{ scale: 0.85 }}
                 onClick={handleCheck}
                 className={`
-                  w-5 h-5 rounded-md border-2 transition-colors duration-200
+                  w-5 h-5 border-2 transition-colors duration-200
                   flex items-center justify-center
                   ${item.checked
                     ? 'bg-accent border-accent shadow-md'
@@ -274,7 +274,7 @@ export default function TodoItem({
                   setEditing(false)
                 }
               }}
-              className="flex-1 bg-surface-2 rounded-lg px-2.5 py-1 text-sm text-ink
+              className="flex-1 bg-surface-2 px-2.5 py-1 text-sm text-ink
                 outline-none border border-accent/40 focus:border-accent shadow-sm"
             />
           ) : (
@@ -292,7 +292,7 @@ export default function TodoItem({
           )}
 
           {item.isHeader && headerStats !== null && (
-            <span className="text-[11px] text-white/90 font-medium px-2 py-0.5 bg-black/15 rounded-full select-none ml-1">
+            <span className="text-[11px] text-white/90 font-medium px-2 py-0.5 bg-black/15 select-none ml-1">
               {headerStats.completed} / {headerStats.total}
             </span>
           )}
@@ -304,7 +304,7 @@ export default function TodoItem({
               onClick={() => toggleRole(tabId, item.id)}
               title={item.isHeader ? "タスクに変更" : "ヘッダーに変更"}
               className={`
-                w-6 h-6 flex items-center justify-center rounded-md text-[10px] font-bold transition-colors
+                w-6 h-6 flex items-center justify-center text-[10px] font-bold transition-colors
                 ${item.isHeader ? 'text-white/70 hover:text-white hover:bg-white/20' : 'text-ink-faint hover:text-accent hover:bg-accent/8'}
               `}
             >
@@ -315,7 +315,7 @@ export default function TodoItem({
               onClick={() => setEditing(true)}
               title="編集"
               className={`
-                w-6 h-6 flex items-center justify-center rounded-md transition-colors
+                w-6 h-6 flex items-center justify-center transition-colors
                 ${item.isHeader ? 'text-white/70 hover:text-white hover:bg-white/20' : 'text-ink-faint hover:text-ink-muted hover:bg-black/6'}
               `}
             >
@@ -328,7 +328,7 @@ export default function TodoItem({
               onClick={handleDelete}
               title="削除"
               className={`
-                w-6 h-6 flex items-center justify-center rounded-md transition-colors
+                w-6 h-6 flex items-center justify-center transition-colors
                 ${item.isHeader ? 'text-white/70 hover:text-white hover:bg-white/20' : 'text-ink-faint hover:text-red-500 hover:bg-red-50'}
               `}
             >
