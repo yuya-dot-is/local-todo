@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence, useAnimation, Reorder, useDragControls } from 'framer-motion'
+import { motion, AnimatePresence, useAnimation, Reorder } from 'framer-motion'
 import { useTodoStore } from '../store/useTodoStore'
 import type { TodoItem as TodoItemType } from '../types'
 
@@ -122,8 +122,6 @@ export default function TodoItem({
   const inputRef = useRef<HTMLInputElement>(null)
   const checkControls = useAnimation()
 
-  const dragControls = useDragControls()
-
   useEffect(() => {
     if (editing && inputRef.current) inputRef.current.select()
   }, [editing])
@@ -178,25 +176,10 @@ export default function TodoItem({
       <Reorder.Item
         value={item}
         id={item.id}
-        dragListener={false}
-        dragControls={dragControls}
         className="group py-0.5"
       >
         <div className="flex items-center gap-2 px-2 hover:bg-black/[0.03] rounded-lg transition-colors group">
-          <button
-            onPointerDown={(e) => dragControls.start(e)}
-            style={{ touchAction: 'none' }}
-            className="flex-shrink-0 w-5 h-5 flex items-center justify-center
-              text-accent/40 hover:text-accent cursor-grab active:cursor-grabbing
-              opacity-0 group-hover:opacity-100 transition-opacity rounded"
-          >
-            <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
-              <circle cx="2.5" cy="2.5" r="1.5"/><circle cx="7.5" cy="2.5" r="1.5"/>
-              <circle cx="2.5" cy="7" r="1.5"/><circle cx="7.5" cy="7" r="1.5"/>
-              <circle cx="2.5" cy="11.5" r="1.5"/><circle cx="7.5" cy="11.5" r="1.5"/>
-            </svg>
-          </button>
-          <div className="flex-1 h-0.5 bg-accent/40 rounded-full relative">
+          <div className="flex-1 h-0.5 bg-accent/40 rounded-full relative ml-2">
             <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-accent/40" />
           </div>
           <span className="text-[10px] text-accent/60 font-medium px-1 flex-shrink-0 select-none">ここに追加</span>
@@ -209,8 +192,6 @@ export default function TodoItem({
     <Reorder.Item
       value={item}
       id={item.id}
-      dragListener={false}
-      dragControls={dragControls}
       className="group relative"
       initial={{ opacity: 0, y: 10, scale: 0.97 }}
       animate={isDeleting
@@ -227,35 +208,11 @@ export default function TodoItem({
 
         <div
           className={`
-            flex items-center gap-2 py-2 px-2 rounded-xl
+            flex items-center gap-2 py-2 px-3 rounded-xl
             transition-colors duration-150
             ${item.isHeader ? 'bg-accent text-white shadow-md' : 'hover:bg-black/[0.03] bg-white'}
           `}
         >
-          {/* drag handle */}
-          <button
-            onPointerDown={(e) => dragControls.start(e)}
-            style={{ touchAction: 'none' }}
-            className={`
-              mt-0.5 flex-shrink-0 w-5 h-5 flex items-center justify-center
-              cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity rounded
-              ${item.isHeader ? 'text-white/50 hover:text-white' : 'text-ink-faint hover:text-ink-muted'}
-            `}
-            aria-label="ドラッグして並べ替え"
-          >
-            <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
-              <circle cx="2.5" cy="2.5" r="1.5"/>
-              <circle cx="7.5" cy="2.5" r="1.5"/>
-              <circle cx="2.5" cy="7" r="1.5"/>
-              <circle cx="7.5" cy="7" r="1.5"/>
-              <circle cx="2.5" cy="11.5" r="1.5"/>
-              <circle cx="7.5" cy="11.5" r="1.5"/>
-            </svg>
-          </button>
-
-          {/* empty spacer for alignment */}
-          <span className="w-2 flex-shrink-0" />
-
           {/* checkbox with medal animation */}
           {!item.isHeader && (
             <div className="relative mt-0.5 flex-shrink-0 w-5 h-5">
