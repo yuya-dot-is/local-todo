@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { motion, AnimatePresence, Reorder } from 'framer-motion'
+import { AnimatePresence, Reorder } from 'framer-motion'
 import { useTodoStore } from '../store/useTodoStore'
 import type { TodoItem } from '../types'
 import TodoItemComponent from './TodoItem'
@@ -112,8 +112,8 @@ export default function TodoList({ tabId, todos }: Props) {
             target.style.height = `${target.scrollHeight}px`
           }}
         />
-        
-        <input 
+
+        <input
           value={estimateValue}
           onChange={(e) => setEstimateValue(e.target.value)}
           onFocus={() => setFocused(true)}
@@ -129,8 +129,8 @@ export default function TodoList({ tabId, todos }: Props) {
             disabled={!inputValue.trim()}
             className={`
               px-2 py-1 text-[11px] font-bold transition-colors
-              ${inputValue.trim() 
-                ? 'bg-accent/10 text-accent hover:bg-accent/20' 
+              ${inputValue.trim()
+                ? 'bg-accent/10 text-accent hover:bg-accent/20'
                 : 'bg-black/5 text-ink-faint cursor-not-allowed opacity-50'}
             `}
           >
@@ -142,8 +142,8 @@ export default function TodoList({ tabId, todos }: Props) {
             disabled={!inputValue.trim()}
             className={`
               px-3 py-1 text-[11px] font-bold transition-colors
-              ${inputValue.trim() 
-                ? 'bg-accent text-white hover:bg-accent-hover' 
+              ${inputValue.trim()
+                ? 'bg-accent text-white hover:bg-accent-hover'
                 : 'bg-black/10 text-ink-faint cursor-not-allowed opacity-50'}
             `}
           >
