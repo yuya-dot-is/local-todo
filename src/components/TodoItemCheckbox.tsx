@@ -3,18 +3,21 @@ import { motion, AnimatePresence } from 'framer-motion'
 interface Props {
   checked: boolean
   handleCheck: (e: React.MouseEvent) => void
+  disabled?: boolean
 }
 
-export default function TodoItemCheckbox({ checked, handleCheck }: Props) {
+export default function TodoItemCheckbox({ checked, handleCheck, disabled }: Props) {
   return (
     <motion.button
-      whileTap={{ scale: 0.9 }}
-      onClick={(e) => handleCheck(e)}
+      whileTap={disabled ? {} : { scale: 0.9 }}
+      onClick={(e) => !disabled && handleCheck(e)}
       className={`
-        w-6 h-6 border-[1.5px] rounded-md flex items-center justify-center transition-colors
+        w-6 h-6 border-[1.5px] rounded-md flex items-center justify-center transition-all
         ${checked ? 'bg-accent border-accent' : 'border-black/15 bg-white'}
+        ${disabled ? 'opacity-20 cursor-default' : 'opacity-100'}
       `}
       aria-label={checked ? '未完了にする' : '完了にする'}
+      disabled={disabled}
     >
       <AnimatePresence>
         {checked && (
