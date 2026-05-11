@@ -1,11 +1,8 @@
-import { Suspense, lazy } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTodoStore } from './store/useTodoStore'
 import TabBar from './components/TabBar'
 import TodoList from './components/TodoList'
 import DataNotice from './components/DataNotice'
-
-const Background3D = lazy(() => import('./components/Background3D'))
 
 function InfoTab() {
   return (
@@ -46,19 +43,6 @@ export default function App() {
 
   return (
     <div className="h-screen flex flex-col text-ink antialiased overflow-hidden">
-      {/* 3D background (lazy, non-blocking) */}
-      <Suspense fallback={null}>
-        <Background3D />
-      </Suspense>
-
-      {/* soft gradient overlay */}
-      <div
-        className="fixed inset-0 -z-10 pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(22,163,74,0.07) 0%, transparent 60%)',
-        }}
-      />
 
       {/* main layout */}
       <div className="flex-1 overflow-y-auto scrollbar-thin pr-1 -mr-1 flex flex-col max-w-2xl w-full mx-auto px-2 sm:px-0 pt-2 pb-8">
