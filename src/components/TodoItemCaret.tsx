@@ -33,9 +33,10 @@ export default function TodoItemCaret({ item }: Props) {
     <Reorder.Item
       value={item}
       id={item.id}
+      layout
       dragListener={false}
       dragControls={dragControls}
-      className="group py-1"
+      className={`group py-1 ${isDraggable ? 'select-none' : ''}`}
       animate={{
         backgroundColor: isDraggable ? '#f0fdf4' : 'transparent'
       }}

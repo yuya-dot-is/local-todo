@@ -62,35 +62,39 @@ export default function TodoItem({ item }: Props) {
     <Reorder.Item
       value={item}
       id={item.id}
+      layout
       dragListener={false}
       dragControls={dragControls}
-      className="group relative"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        backgroundColor: isDraggable ? '#f0fdf4' : '#ffffff'
+      className={`group relative ${isDraggable ? 'select-none' : ''}`}
+      initial={{ opacity: 0 }}
+      animate={{ 
+        opacity: 1, 
+        backgroundColor: isDraggable ? '#f0fdf4' : '#ffffff' 
       }}
-      exit={{ opacity: 0, y: -6, height: 0 }}
-      whileDrag={{
-        scale: 1.05,
+      exit={{ opacity: 0, height: 0 }}
+      whileDrag={{ 
+        scale: 1.05, 
         zIndex: 50,
-        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)'
+        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)' 
       }}
       onDragEnd={() => {
         setIsDraggable(false)
         clearTimer()
       }}
-      transition={{ type: 'spring', stiffness: 600, damping: 25 }}
+      transition={{ 
+        type: 'spring', 
+        stiffness: 600, 
+        damping: 35,
+        opacity: { duration: 0.1 } 
+      }}
     >
-      <div
+      <div 
         onPointerDown={onPointerDown}
         onPointerUp={clearTimer}
         onPointerCancel={clearTimer}
-        // If move more than threshold, cancel long press to allow scroll
         onPointerMove={() => {
           if (!isDraggable && timerRef.current) {
-            // Very simple movement threshold check can be added here if needed
+            // Optional: add movement threshold here
           }
         }}
         className="flex items-center gap-3 py-3 px-2 transition-colors duration-150 hover:bg-black/[0.02]"
