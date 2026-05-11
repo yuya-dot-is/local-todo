@@ -18,7 +18,7 @@ export interface TodoStore {
   addTab: () => void
   renameTab: (tabId: string, name: string) => void
   deleteTab: (tabId: string) => void
-  reorderTabs: (from: number, to: number) => void
+  reorderTabs: (tabs: Tab[]) => void
   setActiveTab: (index: number) => void
   addTodo: (tabId: string, parentId: string | null, title: string) => void
   editTodo: (tabId: string, todoId: string, title: string) => void

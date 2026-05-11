@@ -83,12 +83,9 @@ export const useTodoStore = create<TodoStore>()(
           return { tabs, activeTabIndex }
         }),
 
-      reorderTabs: (from, to) =>
-        set((s) => {
-          const tabs = [...s.tabs]
-          const [moved] = tabs.splice(from, 1)
-          tabs.splice(to, 0, moved)
-          return { tabs }
+      reorderTabs: (newTabs) =>
+        set(() => {
+          return { tabs: newTabs }
         }),
 
       setActiveTab: (index) => set({ activeTabIndex: index }),

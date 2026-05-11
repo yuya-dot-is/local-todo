@@ -23,16 +23,14 @@ export default function TabBar() {
     setEditingId(null)
   }
 
+  // バグ修正: newOrderをそのままストアに渡すよう修正
   const handleReorder = (newOrder: typeof tabs) => {
-    const from = tabs.findIndex((t) => !newOrder.includes(t))
-    const to = newOrder.findIndex((t) => !tabs.includes(t))
-    if (from !== -1 && to !== -1) reorderTabs(from, to)
+    reorderTabs(newOrder as any)
   }
 
   return (
     <div className="flex items-center gap-1 px-4 pt-4 pb-0 overflow-x-auto scrollbar-thin">
       <Reorder.Group
-        as="div"
         axis="x"
         values={tabs}
         onReorder={handleReorder}
@@ -42,7 +40,10 @@ export default function TabBar() {
           {tabs.map((tab, idx) => {
             const isActive = idx === activeTabIndex
             return (
-              <Reorder.Item key={tab.id} value={tab} as="div">
+              <Reorder.Item 
+                key={tab.id} 
+                value={tab}
+              >
                 <motion.div
                   layout
                   initial={{ opacity: 0, scale: 0.85 }}
