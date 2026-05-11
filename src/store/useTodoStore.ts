@@ -3,8 +3,11 @@ import { persist } from 'zustand/middleware'
 import { nanoid } from '../utils/nanoid'
 import type { TodoItem, TodoStore } from '../types'
 
+// キャレットのIDを固定値にすることで、リスト更新時もコンポーネントが再生成されないようにする
+const CARET_ID = 'fixed-caret-id'
+
 const initialTodos = (): TodoItem[] => [{
-  id: `caret-${nanoid()}`,
+  id: CARET_ID,
   title: '',
   checked: false,
   isCaret: true,
@@ -26,9 +29,11 @@ export const useTodoStore = create<TodoStore>()(
         set((s) => {
           const todos = [...s.todos]
           let caretIdx = todos.findIndex(t => t.isCaret)
+          
+          // 万が一キャレットがいなければ作成
           if (caretIdx === -1) {
             const newCaret: TodoItem = {
-              id: `caret-${nanoid()}`,
+              id: CARET_ID,
               title: '',
               checked: false,
               isCaret: true
@@ -44,6 +49,7 @@ export const useTodoStore = create<TodoStore>()(
             isCaret: false,
           }
 
+          // キャレットの直前に挿入
           todos.splice(caretIdx, 0, newItem)
           return { todos }
         }),

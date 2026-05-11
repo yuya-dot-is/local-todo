@@ -19,29 +19,34 @@ export default function TodoItemCaret({ item }: Props) {
   const dragControls = useDragControls()
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const isSubmittingRef = useRef(false) // 送信中フラグ
 
   const handleSubmit = (keepOpen = true) => {
     const value = inputValue.trim()
+    
     if (value) {
+      isSubmittingRef.current = true
       addTodo(value)
       setInputValue('')
       
-      // 入力フォームの高さをリセット
       if (inputRef.current) {
         inputRef.current.style.height = 'auto'
       }
-      
-      // 連続追加の場合はフォーカスを維持
+
       if (keepOpen) {
-        setTimeout(() => inputRef.current?.focus(), 0)
+        // flushSync を使わずに、次のレンダリングサイクルで確実にフォーカス
+        setTimeout(() => {
+          inputRef.current?.focus()
+          isSubmittingRef.current = false
+        }, 10)
         return
       }
     }
     
-    // 値が空、または明示的に閉じる場合
     if (!keepOpen || !value) {
       setIsInputMode(false)
       setInputValue('')
+      isSubmittingRef.current = false
     }
   }
 
@@ -113,11 +118,14 @@ export default function TodoItemCaret({ item }: Props) {
             ref={inputRef}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            // フォーカスが外れた時は保存して閉じる
-            onBlur={() => handleSubmit(false)}
+            onBlur={() => {
+              // 送信中（Enter押下直後など）のBlurは無視する
+              if (!isSubmittingRef.current) {
+                handleSubmit(false)
+              }
+            }}
             onKeyDown={(e) => {
               if (e.nativeEvent.isComposing) return
-              // Enter 単体で追加（フォームは開いたまま）
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault()
                 handleSubmit(true)
@@ -137,7 +145,6 @@ export default function TodoItemCaret({ item }: Props) {
             }}
           />
           <button
-            // buttonクリック時は連続追加を想定
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => handleSubmit(true)}
             className="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-full bg-accent text-white text-lg leading-none shadow-sm active:scale-90 transition-transform"
