@@ -8,7 +8,9 @@ export interface TodoItem {
 export interface TodoStore {
   todos: TodoItem[]
   editingTodoId: string | null
+  isDragging: boolean
   setEditingTodoId: (id: string | null) => void
+  setIsDragging: (isDragging: boolean) => void
   addTodo: (title: string) => void
   editTodo: (todoId: string, title: string) => void
   toggleTodo: (todoId: string) => void

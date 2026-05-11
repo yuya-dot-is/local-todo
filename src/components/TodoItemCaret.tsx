@@ -9,7 +9,7 @@ interface Props {
 }
 
 export default function TodoItemCaret({ item }: Props) {
-  const { editingTodoId, addTodo } = useTodoStore()
+  const { editingTodoId, addTodo, setIsDragging } = useTodoStore()
   const isAnyEditing = editingTodoId !== null
   const [isInputMode, setIsInputMode] = useState(false)
   const [inputValue, setInputValue] = useState('')
@@ -28,7 +28,6 @@ export default function TodoItemCaret({ item }: Props) {
 
   const handlePlusClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    // iOS/Mobile: 1タップで確実にキーボードを開くために flushSync を使用
     flushSync(() => setIsInputMode(true))
     if (inputRef.current) {
       inputRef.current.focus()
@@ -40,6 +39,7 @@ export default function TodoItemCaret({ item }: Props) {
     timerRef.current = setTimeout(() => {
       window.getSelection()?.removeAllRanges()
       setIsDraggable(true)
+      setIsDragging(true)
       dragControls.start(e)
     }, 500)
   }
@@ -60,7 +60,7 @@ export default function TodoItemCaret({ item }: Props) {
       layout
       dragListener={false}
       dragControls={dragControls}
-      className={`group${isDraggable ? ' select-none' : ''}${isAnyEditing ? ' opacity-30 pointer-events-none' : ''}`}
+      className={`group${isAnyEditing ? ' opacity-30 pointer-events-none' : ''}`}
       animate={{
         backgroundColor: isDraggable ? '#f0fdf4' : 'transparent',
         scale: isDraggable ? 1.04 : 1,
@@ -69,10 +69,13 @@ export default function TodoItemCaret({ item }: Props) {
           ? '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)'
           : '0 0 0 0 rgba(0,0,0,0)'
       }}
-      onDragEnd={() => { setIsDraggable(false); clearTimer() }}
+      onDragEnd={() => {
+        setIsDraggable(false)
+        setIsDragging(false)
+        clearTimer()
+      }}
     >
       {isInputMode ? (
-        // 入力モード: 垂直中央揃え (items-center)
         <div className="flex items-center gap-2 px-2 py-2 bg-accent/5 ring-1 ring-inset ring-accent/30 min-h-[48px]">
           <textarea
             ref={inputRef}
@@ -90,7 +93,7 @@ export default function TodoItemCaret({ item }: Props) {
             }}
             placeholder="タスクを追加…"
             rows={1}
-            className="flex-1 bg-transparent text-sm text-ink placeholder-ink-faint outline-none resize-none leading-relaxed block"
+            className="flex-1 bg-transparent text-sm text-ink outline-none resize-none leading-relaxed block"
           />
           <button
             onMouseDown={(e) => e.preventDefault()}
@@ -101,7 +104,6 @@ export default function TodoItemCaret({ item }: Props) {
           </button>
         </div>
       ) : (
-        // 「+」ボタンモード
         <div
           data-caret="true"
           onPointerDown={onPointerDown}

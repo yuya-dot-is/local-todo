@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function TodoItem({ item }: Props) {
-  const { toggleTodo, deleteTodo, editingTodoId, setEditingTodoId, editTodo } = useTodoStore()
+  const { toggleTodo, deleteTodo, editingTodoId, setEditingTodoId, editTodo, setIsDragging } = useTodoStore()
   const [isDraggable, setIsDraggable] = useState(false)
   const [editValue, setEditValue] = useState(item.title)
   const dragControls = useDragControls()
@@ -49,7 +49,6 @@ export default function TodoItem({ item }: Props) {
     e.preventDefault()
     e.stopPropagation()
 
-    // 1回のタップで確実に編集モードへ移行させるための flushSync
     setEditValue(item.title)
     flushSync(() => {
       setEditingTodoId(item.id)
@@ -67,6 +66,7 @@ export default function TodoItem({ item }: Props) {
     timerRef.current = setTimeout(() => {
       window.getSelection()?.removeAllRanges()
       setIsDraggable(true)
+      setIsDragging(true) // アプリ全体をドラッグ中状態にする
       dragControls.start(e)
     }, 500)
   }
@@ -97,7 +97,7 @@ export default function TodoItem({ item }: Props) {
       layout
       dragListener={false}
       dragControls={dragControls}
-      className={`group relative${isDraggable ? ' select-none' : ''}`}
+      className="group relative"
       initial={{ opacity: 0 }}
       animate={{
         opacity: dimmed ? 0.3 : 1,
@@ -109,7 +109,11 @@ export default function TodoItem({ item }: Props) {
           : '0 0 0 0 rgba(0,0,0,0)'
       }}
       exit={{ opacity: 0, height: 0 }}
-      onDragEnd={() => { setIsDraggable(false); clearTimer() }}
+      onDragEnd={() => {
+        setIsDraggable(false)
+        setIsDragging(false) // ドラッグ終了
+        clearTimer()
+      }}
       transition={{ type: 'spring', stiffness: 400, damping: 30, opacity: { duration: 0.15 } }}
     >
       <div
@@ -118,7 +122,6 @@ export default function TodoItem({ item }: Props) {
         onPointerCancel={clearTimer}
         onPointerMove={onPointerMove}
         onClick={handleItemClick}
-        // items-center でチェックボックスとテキストを中央揃えに
         className={`flex items-center gap-3 py-3 px-2 transition-colors duration-150${isEditing ? ' ring-1 ring-inset ring-accent/30' : ' hover:bg-black/[0.02]'}${dimmed ? ' pointer-events-none' : ''}`}
       >
         <div className="flex-shrink-0">
@@ -132,7 +135,6 @@ export default function TodoItem({ item }: Props) {
               value={editValue}
               onChange={(e) => {
                 setEditValue(e.target.value)
-                // 自動リサイズ
                 const el = e.target
                 el.style.height = 'auto'
                 el.style.height = `${el.scrollHeight}px`
@@ -140,7 +142,6 @@ export default function TodoItem({ item }: Props) {
               onBlur={commitEdit}
               onKeyDown={(e) => {
                 if (e.nativeEvent.isComposing) return
-                // Escape でキャンセル
                 if (e.key === 'Escape') { setEditValue(item.title); setEditingTodoId(null) }
               }}
               rows={1}
