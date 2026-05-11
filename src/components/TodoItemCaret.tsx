@@ -9,7 +9,7 @@ interface Props {
 export default function TodoItemCaret({ item }: Props) {
   const [isDraggable, setIsDraggable] = useState(false)
   const dragControls = useDragControls()
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const onPointerDown = (e: React.PointerEvent) => {
     timerRef.current = setTimeout(() => {

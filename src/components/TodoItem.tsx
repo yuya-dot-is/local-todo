@@ -18,7 +18,7 @@ export default function TodoItem({ item }: Props) {
   const [editValue, setEditValue] = useState(item.title)
   const [isDraggable, setIsDraggable] = useState(false)
   const dragControls = useDragControls()
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const commitEdit = () => {
     const finalTitle = editValue.trim()
@@ -37,7 +37,6 @@ export default function TodoItem({ item }: Props) {
   // Long press logic
   const onPointerDown = (e: React.PointerEvent) => {
     if (editing) return
-    const event = { ...e } // Capture event
     timerRef.current = setTimeout(() => {
       setIsDraggable(true)
       dragControls.start(e)
