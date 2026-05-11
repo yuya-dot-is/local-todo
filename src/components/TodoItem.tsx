@@ -1,11 +1,12 @@
 import { useCallback, useRef, useEffect, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { Reorder, useDragControls, motion, useMotionValue } from 'framer-motion'
+import { Reorder, useDragControls } from 'framer-motion'
 import { useTodoStore } from '../store/useTodoStore'
 import type { TodoItem as TodoItemType } from '../types'
 import TodoItemCheckbox from './TodoItemCheckbox'
 import TodoItemCaret from './TodoItemCaret'
 import TodoItemTitle from './TodoItemTitle'
+import TodoItemActions from './TodoItemActions'
 
 interface Props {
   item: TodoItemType
@@ -24,7 +25,6 @@ export default function TodoItem({ item }: Props) {
   } = useTodoStore()
 
   const dragControls = useDragControls()
-  const x = useMotionValue(0)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   
@@ -55,7 +55,6 @@ export default function TodoItem({ item }: Props) {
   }, [item.id, toggleTodo, isAnyEditing])
 
   const handleItemClick = (e: React.MouseEvent) => {
-    if (Math.abs(x.get()) > 10) return
     if (isAnyEditing && !isEditing) return
     if (isEditing) return
 
@@ -74,7 +73,6 @@ export default function TodoItem({ item }: Props) {
   const onPointerDown = (e: React.PointerEvent) => {
     if (isAnyEditing) return
     timerRef.current = setTimeout(() => {
-      x.set(0)
       window.getSelection()?.removeAllRanges()
       setDraggingItemId(item.id)
       setIsDragging(true)
@@ -114,11 +112,10 @@ export default function TodoItem({ item }: Props) {
       layout
       dragListener={false}
       dragControls={dragControls}
-      className="group relative overflow-hidden touch-pan-y"
+      className="group relative overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{
         opacity: dimmed ? 0.3 : 1,
-        // ドラッグ中や編集中は背景色を薄緑に、それ以外は白に固定（透け防止）
         backgroundColor: isEditing || isDraggable ? '#f0fdf4' : '#ffffff',
         scale: isDraggable ? 1.04 : 1,
         zIndex: isDraggable ? 50 : 0,
@@ -130,30 +127,13 @@ export default function TodoItem({ item }: Props) {
       onDragEnd={handleEnd}
       transition={{ type: 'spring', stiffness: 400, damping: 30, opacity: { duration: 0.15 } }}
     >
-      <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center bg-red-500 text-white font-bold">
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            deleteTodo(item.id)
-          }}
-          className="w-full h-full flex items-center justify-center active:bg-red-600 transition-colors"
-        >
-          削除
-        </button>
-      </div>
-
-      <motion.div
-        style={{ x }}
-        drag={isEditing || isDraggable ? false : "x"}
-        dragConstraints={{ left: -80, right: 0 }}
-        dragElastic={0.05}
+      <div
         onPointerDown={onPointerDown}
         onPointerUp={handleEnd}
         onPointerCancel={handleEnd}
         onPointerMove={onPointerMove}
         onClick={handleItemClick}
-        // py-3 -> py-1.5, bg-inherit -> bg-white (透け防止)
-        className={`relative z-10 bg-white flex items-center gap-3 py-1.5 px-2 transition-colors duration-150${isEditing ? ' ring-1 ring-inset ring-accent/30' : ' hover:bg-black/[0.02]'}${dimmed ? ' pointer-events-none' : ''}`}
+        className={`relative z-10 flex items-center gap-3 py-1.5 px-2 transition-colors duration-150${isEditing ? ' ring-1 ring-inset ring-accent/30 bg-[#f0fdf4]' : ' hover:bg-black/[0.02] bg-white'}${dimmed ? ' pointer-events-none' : ''}`}
       >
         {!isEditing && (
           <div className="flex-shrink-0">
@@ -185,7 +165,11 @@ export default function TodoItem({ item }: Props) {
             <TodoItemTitle title={item.title} checked={item.checked} />
           )}
         </div>
-      </motion.div>
+
+        {!isAnyEditing && (
+          <TodoItemActions onDelete={() => deleteTodo(item.id)} />
+        )}
+      </div>
     </Reorder.Item>
   )
 }
