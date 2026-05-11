@@ -3,58 +3,6 @@ import { persist } from 'zustand/middleware'
 import { nanoid } from '../utils/nanoid'
 import type { Tab, TodoItem, TodoStore } from '../types'
 
-function findAndMutate(
-  todos: TodoItem[],
-  id: string,
-  mutator: (item: TodoItem, siblings: TodoItem[], idx: number) => void,
-): boolean {
-  for (let i = 0; i < todos.length; i++) {
-    if (todos[i].id === id) {
-      mutator(todos[i], todos, i)
-      return true
-    }
-    if (findAndMutate(todos[i].children, id, mutator)) return true
-  }
-  return false
-}
-
-function findParentList(
-  todos: TodoItem[],
-  parentId: string | null,
-): TodoItem[] | null {
-  if (parentId === null) return todos
-  for (const t of todos) {
-    if (t.id === parentId) return t.children
-    const found = findParentList(t.children, parentId)
-    if (found) return found
-  }
-  return null
-}
-
-interface FoundItem {
-  item: TodoItem
-  siblings: TodoItem[]
-  index: number
-  parentSiblings: TodoItem[] | null
-  parentIndex: number
-}
-
-function findItemWithParent(
-  todos: TodoItem[],
-  id: string,
-  parentSiblings: TodoItem[] | null = null,
-  parentIndex: number = -1,
-): FoundItem | null {
-  for (let i = 0; i < todos.length; i++) {
-    if (todos[i].id === id) {
-      return { item: todos[i], siblings: todos, index: i, parentSiblings, parentIndex }
-    }
-    const found = findItemWithParent(todos[i].children, id, todos, i)
-    if (found) return found
-  }
-  return null
-}
-
 const defaultTab = (): Tab => ({
   id: nanoid(),
   name: 'My Tasks',
@@ -90,21 +38,17 @@ export const useTodoStore = create<TodoStore>()(
 
       setActiveTab: (index) => set({ activeTabIndex: index }),
 
-      addTodo: (tabId, parentId, title) =>
+      addTodo: (tabId, title) =>
         set((s) => ({
           tabs: s.tabs.map((tab) => {
             if (tab.id !== tabId) return tab
-            const todos = structuredClone(tab.todos)
             const newItem: TodoItem = {
               id: nanoid(),
               title,
               checked: false,
               createdAt: Date.now(),
-              children: [],
             }
-            const list = findParentList(todos, parentId)
-            if (list) list.push(newItem)
-            return { ...tab, todos }
+            return { ...tab, todos: [...tab.todos, newItem] }
           }),
         })),
 
@@ -112,8 +56,7 @@ export const useTodoStore = create<TodoStore>()(
         set((s) => ({
           tabs: s.tabs.map((tab) => {
             if (tab.id !== tabId) return tab
-            const todos = structuredClone(tab.todos)
-            findAndMutate(todos, todoId, (item) => { item.title = title })
+            const todos = tab.todos.map(t => t.id === todoId ? { ...t, title } : t)
             return { ...tab, todos }
           }),
         })),
@@ -122,8 +65,7 @@ export const useTodoStore = create<TodoStore>()(
         set((s) => ({
           tabs: s.tabs.map((tab) => {
             if (tab.id !== tabId) return tab
-            const todos = structuredClone(tab.todos)
-            findAndMutate(todos, todoId, (item) => { item.checked = !item.checked })
+            const todos = tab.todos.map(t => t.id === todoId ? { ...t, checked: !t.checked } : t)
             return { ...tab, todos }
           }),
         })),
@@ -132,56 +74,16 @@ export const useTodoStore = create<TodoStore>()(
         set((s) => ({
           tabs: s.tabs.map((tab) => {
             if (tab.id !== tabId) return tab
-            const todos = structuredClone(tab.todos)
-            findAndMutate(todos, todoId, (_item, siblings, idx) => {
-              siblings.splice(idx, 1)
-            })
+            const todos = tab.todos.filter(t => t.id !== todoId)
             return { ...tab, todos }
           }),
         })),
 
-      reorderTodos: (tabId, parentId, from, to) =>
+      reorderTodos: (tabId, newTodos) =>
         set((s) => ({
           tabs: s.tabs.map((tab) => {
             if (tab.id !== tabId) return tab
-            const todos = structuredClone(tab.todos)
-            const list = findParentList(todos, parentId)
-            if (!list) return tab
-            const [moved] = list.splice(from, 1)
-            list.splice(to, 0, moved)
-            return { ...tab, todos }
-          }),
-        })),
-
-      // Move todo under its previous sibling's children (depth + 1)
-      indentTodo: (tabId, todoId) =>
-        set((s) => ({
-          tabs: s.tabs.map((tab) => {
-            if (tab.id !== tabId) return tab
-            const todos = structuredClone(tab.todos)
-            const found = findItemWithParent(todos, todoId)
-            if (!found) return tab
-            const { item, siblings, index } = found
-            if (index === 0) return tab // no previous sibling
-            const prevSibling = siblings[index - 1]
-            siblings.splice(index, 1)
-            prevSibling.children.push(item)
-            return { ...tab, todos }
-          }),
-        })),
-
-      // Promote todo to parent's level, inserted after parent
-      outdentTodo: (tabId, todoId) =>
-        set((s) => ({
-          tabs: s.tabs.map((tab) => {
-            if (tab.id !== tabId) return tab
-            const todos = structuredClone(tab.todos)
-            const found = findItemWithParent(todos, todoId)
-            if (!found || !found.parentSiblings) return tab
-            const { item, siblings, index, parentSiblings, parentIndex } = found
-            siblings.splice(index, 1)
-            parentSiblings.splice(parentIndex + 1, 0, item)
-            return { ...tab, todos }
+            return { ...tab, todos: newTodos }
           }),
         })),
     }),

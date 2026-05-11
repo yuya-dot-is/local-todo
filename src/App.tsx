@@ -88,8 +88,6 @@ export default function App() {
                 <TodoList
                   tabId={activeTab.id}
                   todos={activeTab.todos}
-                  parentId={null}
-                  depth={0}
                 />
               ) : null}
             </motion.div>

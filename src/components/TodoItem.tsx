@@ -1,10 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence, useAnimation } from 'framer-motion'
-import { useSortable } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
+import { motion, AnimatePresence, useAnimation, Reorder, useDragControls } from 'framer-motion'
 import { useTodoStore } from '../store/useTodoStore'
 import type { TodoItem as TodoItemType } from '../types'
-import TodoList from './TodoList'
 
 // ─── Particle burst on check ────────────────────────────────────────────────
 const CHECK_COLORS = ['#16a34a', '#22c55e', '#86efac', '#fb923c', '#a78bfa', '#38bdf8', '#fbbf24', '#f472b6']
@@ -107,53 +104,25 @@ function StarSparkle({ active }: { active: boolean }) {
 interface Props {
   tabId: string
   item: TodoItemType
-  parentId: string | null
-  depth: number
-  hasPrevSibling: boolean
-  isDragActive?: boolean
 }
 
 export default function TodoItem({
   tabId,
   item,
-  parentId: _parentId,
-  depth,
-  hasPrevSibling,
-  isDragActive: _isDragActive = false,
 }: Props) {
-  const { toggleTodo, editTodo, deleteTodo, addTodo, indentTodo, outdentTodo } = useTodoStore()
+  const { toggleTodo, editTodo, deleteTodo } = useTodoStore()
   const [editing, setEditing] = useState(false)
   const [editValue, setEditValue] = useState(item.title)
-  const [expanded, setExpanded] = useState(true)
-  const [showAddChild, setShowAddChild] = useState(false)
-  const [childInput, setChildInput] = useState('')
   const [justChecked, setJustChecked] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-  const childInputRef = useRef<HTMLInputElement>(null)
   const checkControls = useAnimation()
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.id })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  }
+  const dragControls = useDragControls()
 
   useEffect(() => {
     if (editing && inputRef.current) inputRef.current.select()
   }, [editing])
-
-  useEffect(() => {
-    if (showAddChild && childInputRef.current) childInputRef.current.focus()
-  }, [showAddChild])
 
   // Update editValue when item title changes externally
   useEffect(() => {
@@ -164,15 +133,6 @@ export default function TodoItem({
     if (editValue.trim()) editTodo(tabId, item.id, editValue.trim())
     else setEditValue(item.title)
     setEditing(false)
-  }
-
-  const commitAddChild = () => {
-    if (childInput.trim()) {
-      addTodo(tabId, item.id, childInput.trim())
-      setExpanded(true)
-    }
-    setChildInput('')
-    setShowAddChild(false)
   }
 
   const handleCheck = useCallback(async () => {
@@ -194,24 +154,20 @@ export default function TodoItem({
     setTimeout(() => deleteTodo(tabId, item.id), 350)
   }
 
-  const canNest = depth < 2
-  const canIndent = hasPrevSibling && depth < 2
-  const canOutdent = depth > 0
-
   return (
-    // Outer div holds dnd-kit ref + transform only — never mix with framer-motion layout
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`group relative ${depth > 0 ? 'ml-6 border-l-2 border-accent/20 pl-3' : ''}`}
-    >
-    <motion.div
+    <Reorder.Item
+      value={item}
+      id={item.id}
+      dragListener={false}
+      dragControls={dragControls}
+      className="group relative"
       initial={{ opacity: 0, y: 10, scale: 0.97 }}
       animate={isDeleting
         ? { scale: [1, 1.08, 0], opacity: [1, 1, 0], rotate: [0, 6, -6], transition: { duration: 0.32 } }
-        : { opacity: isDragging ? 0.15 : 1, y: 0, scale: 1 }
+        : { opacity: 1, y: 0, scale: 1 }
       }
       exit={{ opacity: 0, y: -6, scale: 0.94, height: 0, transition: { duration: 0.2 } }}
+      whileDrag={{ scale: 1.02, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)' }}
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
     >
       {/* explosion particles overlay */}
@@ -222,13 +178,13 @@ export default function TodoItem({
           className={`
             flex items-start gap-2 py-2 px-2 rounded-xl
             transition-colors duration-150
-            ${isDragging ? 'opacity-20' : 'hover:bg-black/[0.03]'}
+            hover:bg-black/[0.03] bg-white
           `}
         >
           {/* drag handle */}
           <button
-            {...attributes}
-            {...listeners}
+            onPointerDown={(e) => dragControls.start(e)}
+            style={{ touchAction: 'none' }}
             className="mt-0.5 flex-shrink-0 w-5 h-5 flex items-center justify-center
               text-ink-faint hover:text-ink-muted cursor-grab active:cursor-grabbing
               opacity-0 group-hover:opacity-100 transition-opacity rounded"
@@ -244,25 +200,8 @@ export default function TodoItem({
             </svg>
           </button>
 
-          {/* expand/collapse */}
-          {item.children.length > 0 ? (
-            <button
-              onClick={() => setExpanded(!expanded)}
-              className="mt-0.5 flex-shrink-0 w-5 h-5 flex items-center justify-center
-                text-ink-faint hover:text-ink-muted transition-all rounded"
-              aria-label={expanded ? '折りたたむ' : '展開する'}
-            >
-              <motion.span
-                animate={{ rotate: expanded ? 90 : 0 }}
-                transition={{ duration: 0.15 }}
-                className="inline-block text-[9px] leading-none"
-              >
-                ▶
-              </motion.span>
-            </button>
-          ) : (
-            <span className="w-5 flex-shrink-0" />
-          )}
+          {/* empty spacer for alignment */}
+          <span className="w-2 flex-shrink-0" />
 
           {/* checkbox with medal animation */}
           <div className="relative mt-0.5 flex-shrink-0 w-5 h-5">
@@ -322,12 +261,6 @@ export default function TodoItem({
                   setEditValue(item.title)
                   setEditing(false)
                 }
-                if (e.key === 'Tab') {
-                  e.preventDefault()
-                  commitEdit()
-                  if (e.shiftKey && canOutdent) outdentTodo(tabId, item.id)
-                  else if (!e.shiftKey && canIndent) indentTodo(tabId, item.id)
-                }
               }}
               className="flex-1 bg-surface-2 rounded-lg px-2.5 py-1 text-sm text-ink
                 outline-none border border-accent/40 focus:border-accent shadow-sm"
@@ -347,39 +280,6 @@ export default function TodoItem({
 
           {/* action buttons */}
           <div className="flex items-center gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-            {canOutdent && (
-              <motion.button
-                whileTap={{ scale: 0.85 }}
-                onClick={() => outdentTodo(tabId, item.id)}
-                title="一段上げる (Shift+Tab)"
-                className="w-6 h-6 flex items-center justify-center rounded-md text-ink-faint
-                  hover:text-accent hover:bg-accent/8 transition-colors text-xs"
-              >
-                ←
-              </motion.button>
-            )}
-            {canIndent && (
-              <motion.button
-                whileTap={{ scale: 0.85 }}
-                onClick={() => indentTodo(tabId, item.id)}
-                title="一段下げる (Tab)"
-                className="w-6 h-6 flex items-center justify-center rounded-md text-ink-faint
-                  hover:text-accent hover:bg-accent/8 transition-colors text-xs"
-              >
-                →
-              </motion.button>
-            )}
-            {canNest && (
-              <motion.button
-                whileTap={{ scale: 0.85 }}
-                onClick={() => setShowAddChild(true)}
-                title="サブタスクを追加"
-                className="w-6 h-6 flex items-center justify-center rounded-md text-ink-faint
-                  hover:text-accent hover:bg-accent/8 transition-colors text-xs"
-              >
-                ⊕
-              </motion.button>
-            )}
             <motion.button
               whileTap={{ scale: 0.85 }}
               onClick={() => setEditing(true)}
@@ -405,57 +305,6 @@ export default function TodoItem({
           </div>
         </div>
       </div>
-
-      {/* add child input */}
-      <AnimatePresence>
-        {showAddChild && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="ml-12 mt-1 overflow-hidden"
-          >
-            <input
-              ref={childInputRef}
-              value={childInput}
-              onChange={(e) => setChildInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') commitAddChild()
-                if (e.key === 'Escape') {
-                  setChildInput('')
-                  setShowAddChild(false)
-                }
-              }}
-              onBlur={commitAddChild}
-              placeholder="サブタスクを追加…"
-              className="w-full bg-surface-2 border border-black/10 rounded-lg px-3 py-1.5
-                text-sm text-ink placeholder-ink-faint outline-none
-                focus:border-accent/40 transition-colors"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* children */}
-      <AnimatePresence initial={false}>
-        {expanded && item.children.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden mt-0.5"
-          >
-            <TodoList
-              tabId={tabId}
-              todos={item.children}
-              parentId={item.id}
-              depth={depth + 1}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-    </div>
+    </Reorder.Item>
   )
 }
