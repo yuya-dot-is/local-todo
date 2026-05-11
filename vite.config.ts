@@ -4,6 +4,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   base: '/local-todo/',
+  server: {
+    host: true,
+  },
   plugins: [
     react(),
     VitePWA({
