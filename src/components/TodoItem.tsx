@@ -12,14 +12,15 @@ interface Props {
 }
 
 export default function TodoItem({ item }: Props) {
-  const { toggleTodo, deleteTodo, editingTodoId, setEditingTodoId } = useTodoStore()
+  const { toggleTodo, deleteTodo, editingTodoId, editingValue, setEditingTodoId } = useTodoStore()
   const [isDraggable, setIsDraggable] = useState(false)
   const dragControls = useDragControls()
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const itemRef = useRef<HTMLDivElement>(null)
   const isEditing = editingTodoId === item.id
-  // Disable drag entirely when any task is being edited
   const isAnyEditing = editingTodoId !== null
+  // Show live-typed value when editing, otherwise show stored title
+  const displayTitle = isEditing ? editingValue : item.title
 
   const handleCheck = useCallback(() => {
     toggleTodo(item.id)
@@ -100,7 +101,7 @@ export default function TodoItem({ item }: Props) {
         <TodoItemCheckbox checked={item.checked} handleCheck={handleCheck} />
 
         <div className="flex-1 min-w-0">
-          <TodoItemTitle title={item.title} checked={item.checked} />
+          <TodoItemTitle title={displayTitle} checked={item.checked} />
         </div>
 
         <TodoItemActions

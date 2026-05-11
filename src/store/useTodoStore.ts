@@ -15,8 +15,15 @@ export const useTodoStore = create<TodoStore>()(
     (set) => ({
       todos: initialTodos(),
       editingTodoId: null,
+      editingValue: '',
 
-      setEditingTodoId: (id) => set({ editingTodoId: id }),
+      setEditingTodoId: (id) => set((s) => ({
+        editingTodoId: id,
+        // When switching to a new task, seed editingValue from that task's title
+        editingValue: id ? (s.todos.find(t => t.id === id)?.title ?? '') : ''
+      })),
+
+      setEditingValue: (value) => set({ editingValue: value }),
 
       addTodo: (title) =>
         set((s) => {
