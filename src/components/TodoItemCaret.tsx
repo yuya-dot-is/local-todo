@@ -108,13 +108,13 @@ export default function TodoItemCaret({ item }: Props) {
           onPointerCancel={clearTimer}
           className="flex items-center px-2 h-10 hover:bg-black/[0.02] transition-colors"
         >
+          <div className="flex-1 h-px bg-accent/20 mr-2" />
           <button
             onClick={(e) => { e.stopPropagation(); setIsInputMode(true) }}
             className="w-8 h-8 flex items-center justify-center rounded-full text-accent/70 hover:text-accent hover:bg-accent/8 transition-colors text-xl leading-none"
           >
             +
           </button>
-          <div className="flex-1 h-px bg-accent/20 ml-2" />
         </div>
       )}
     </Reorder.Item>
