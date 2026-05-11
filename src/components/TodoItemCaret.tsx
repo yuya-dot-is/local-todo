@@ -84,13 +84,15 @@ export default function TodoItemCaret({ item }: Props) {
       onDragEnd={handleEnd}
     >
       {isInputMode ? (
-        <div className="flex items-center gap-2 px-2 py-2 bg-accent/5 ring-1 ring-inset ring-accent/30 min-h-[48px]">
+        <div className="flex items-center gap-2 px-2 py-1 bg-accent/5 ring-1 ring-inset ring-accent/30 min-h-[36px]">
           <textarea
             ref={inputRef}
             value={inputValue}
             onChange={(e) => {
               setInputValue(e.target.value)
-              const el = e.target
+            }}
+            onInput={(e) => {
+              const el = e.target as HTMLTextAreaElement
               el.style.height = 'auto'
               el.style.height = `${el.scrollHeight}px`
             }}
@@ -101,12 +103,12 @@ export default function TodoItemCaret({ item }: Props) {
             }}
             placeholder="タスクを追加…"
             rows={1}
-            className="flex-1 bg-transparent text-sm text-ink placeholder-ink-faint outline-none resize-none leading-relaxed block"
+            className="flex-1 bg-transparent text-sm text-ink placeholder-ink-faint outline-none resize-none leading-snug block"
           />
           <button
             onMouseDown={(e) => e.preventDefault()}
             onClick={handleSubmit}
-            className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full bg-accent text-white text-lg leading-none shadow-sm active:scale-90 transition-transform"
+            className="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-full bg-accent text-white text-lg leading-none shadow-sm active:scale-90 transition-transform"
           >
             ↑
           </button>
@@ -118,12 +120,12 @@ export default function TodoItemCaret({ item }: Props) {
           onPointerUp={handleEnd}
           onPointerCancel={handleEnd}
           onPointerMove={onPointerMove}
-          className="flex items-center px-2 h-10 hover:bg-black/[0.02] transition-colors"
+          className="flex items-center px-2 h-8 hover:bg-black/[0.02] transition-colors"
         >
           <div className="flex-1 h-px bg-accent/10 mr-4" />
           <button
             onClick={handlePlusClick}
-            className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full border border-accent/30 text-accent/60 bg-accent/[0.03] hover:border-accent/60 hover:text-accent hover:bg-accent/10 transition-all text-xl font-light active:scale-90"
+            className="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-full border border-accent/30 text-accent/60 bg-accent/[0.03] hover:border-accent/60 hover:text-accent hover:bg-accent/10 transition-all text-lg font-light active:scale-90"
           >
             +
           </button>

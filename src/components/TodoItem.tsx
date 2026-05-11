@@ -55,7 +55,6 @@ export default function TodoItem({ item }: Props) {
   }, [item.id, toggleTodo, isAnyEditing])
 
   const handleItemClick = (e: React.MouseEvent) => {
-    // スワイプされている時は編集モードに入らないようにする
     if (Math.abs(x.get()) > 10) return
     if (isAnyEditing && !isEditing) return
     if (isEditing) return
@@ -75,7 +74,6 @@ export default function TodoItem({ item }: Props) {
   const onPointerDown = (e: React.PointerEvent) => {
     if (isAnyEditing) return
     timerRef.current = setTimeout(() => {
-      // ドラッグが始まったらスワイプをリセット
       x.set(0)
       window.getSelection()?.removeAllRanges()
       setDraggingItemId(item.id)
@@ -120,6 +118,7 @@ export default function TodoItem({ item }: Props) {
       initial={{ opacity: 0 }}
       animate={{
         opacity: dimmed ? 0.3 : 1,
+        // ドラッグ中や編集中は背景色を薄緑に、それ以外は白に固定（透け防止）
         backgroundColor: isEditing || isDraggable ? '#f0fdf4' : '#ffffff',
         scale: isDraggable ? 1.04 : 1,
         zIndex: isDraggable ? 50 : 0,
@@ -131,7 +130,6 @@ export default function TodoItem({ item }: Props) {
       onDragEnd={handleEnd}
       transition={{ type: 'spring', stiffness: 400, damping: 30, opacity: { duration: 0.15 } }}
     >
-      {/* 背後の削除ボタン */}
       <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center bg-red-500 text-white font-bold">
         <button
           onClick={(e) => {
@@ -144,7 +142,6 @@ export default function TodoItem({ item }: Props) {
         </button>
       </div>
 
-      {/* スワイプ可能なコンテンツレイヤー */}
       <motion.div
         style={{ x }}
         drag={isEditing || isDraggable ? false : "x"}
@@ -155,7 +152,8 @@ export default function TodoItem({ item }: Props) {
         onPointerCancel={handleEnd}
         onPointerMove={onPointerMove}
         onClick={handleItemClick}
-        className={`relative z-10 bg-inherit flex items-center gap-3 py-3 px-2 transition-colors duration-150${isEditing ? ' ring-1 ring-inset ring-accent/30' : ' hover:bg-black/[0.02]'}${dimmed ? ' pointer-events-none' : ''}`}
+        // py-3 -> py-1.5, bg-inherit -> bg-white (透け防止)
+        className={`relative z-10 bg-white flex items-center gap-3 py-1.5 px-2 transition-colors duration-150${isEditing ? ' ring-1 ring-inset ring-accent/30' : ' hover:bg-black/[0.02]'}${dimmed ? ' pointer-events-none' : ''}`}
       >
         {!isEditing && (
           <div className="flex-shrink-0">
@@ -181,7 +179,7 @@ export default function TodoItem({ item }: Props) {
               }}
               rows={1}
               onClick={(e) => e.stopPropagation()}
-              className="w-full bg-transparent text-sm text-ink outline-none resize-none leading-relaxed block"
+              className="w-full bg-transparent text-sm text-ink outline-none resize-none leading-snug block"
             />
           ) : (
             <TodoItemTitle title={item.title} checked={item.checked} />
