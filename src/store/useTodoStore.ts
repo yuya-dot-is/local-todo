@@ -21,8 +21,39 @@ export const useTodoStore = create<TodoStore>()(
       tabs: [defaultTab()],
       activeTabIndex: 0,
       showInfoTab: false,
+      stopwatchActive: false,
+      stopwatchPaused: false,
+      stopwatchStartTime: null,
+      stopwatchAccumulatedTime: 0,
 
       setShowInfoTab: (show) => set({ showInfoTab: show }),
+      setStopwatch: (active) => set({ 
+        stopwatchActive: active, 
+        stopwatchPaused: false,
+        stopwatchStartTime: active ? Date.now() : null,
+        stopwatchAccumulatedTime: 0
+      }),
+      pauseStopwatch: (paused) => set((s) => {
+        if (paused) {
+          const now = Date.now()
+          const elapsed = s.stopwatchStartTime ? now - s.stopwatchStartTime : 0
+          return {
+            stopwatchPaused: true,
+            stopwatchAccumulatedTime: s.stopwatchAccumulatedTime + elapsed,
+            stopwatchStartTime: null
+          }
+        } else {
+          return {
+            stopwatchPaused: false,
+            stopwatchStartTime: Date.now()
+          }
+        }
+      }),
+      resetStopwatch: () => set((s) => ({
+        stopwatchStartTime: s.stopwatchActive ? Date.now() : null,
+        stopwatchAccumulatedTime: 0,
+        stopwatchPaused: false
+      })),
 
       addTab: () =>
         set((s) => ({ tabs: [...s.tabs, defaultTab()] })),
@@ -47,7 +78,7 @@ export const useTodoStore = create<TodoStore>()(
 
       setActiveTab: (index) => set({ activeTabIndex: index, showInfoTab: false }),
 
-      addTodo: (tabId, title, isHeader = false) =>
+      addTodo: (tabId, title, isHeader = false, estimate = '') =>
         set((s) => ({
           tabs: s.tabs.map((tab) => {
             if (tab.id !== tabId) return tab
@@ -69,6 +100,7 @@ export const useTodoStore = create<TodoStore>()(
               checked: false,
               createdAt: Date.now(),
               isHeader,
+              estimate,
             }
             
             // Insert exactly before the caret
@@ -78,11 +110,18 @@ export const useTodoStore = create<TodoStore>()(
           }),
         })),
 
-      editTodo: (tabId, todoId, title) =>
+      editTodo: (tabId, todoId, title, estimate) =>
         set((s) => ({
           tabs: s.tabs.map((tab) => {
             if (tab.id !== tabId) return tab
-            const todos = tab.todos.map(t => t.id === todoId ? { ...t, title } : t)
+            const todos = tab.todos.map(t => {
+              if (t.id === todoId) {
+                const updated = { ...t, title }
+                if (estimate !== undefined) updated.estimate = estimate
+                return updated
+              }
+              return t
+            })
             return { ...tab, todos }
           }),
         })),
@@ -94,6 +133,10 @@ export const useTodoStore = create<TodoStore>()(
             const todos = tab.todos.map(t => t.id === todoId ? { ...t, checked: !t.checked } : t)
             return { ...tab, todos }
           }),
+          // Reset start time to now when a task is completed, so the next one starts from 0
+          stopwatchStartTime: s.stopwatchActive ? Date.now() : s.stopwatchStartTime,
+          stopwatchAccumulatedTime: 0,
+          stopwatchPaused: false
         })),
 
       toggleRole: (tabId, todoId) =>

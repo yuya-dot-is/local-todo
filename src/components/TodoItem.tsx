@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence, useAnimation, Reorder } from 'framer-motion'
 import { useTodoStore } from '../store/useTodoStore'
 import type { TodoItem as TodoItemType } from '../types'
@@ -114,13 +114,60 @@ export default function TodoItem({
   allTodos,
   index,
 }: Props) {
-  const { toggleTodo, editTodo, deleteTodo, toggleRole } = useTodoStore()
+  const { toggleTodo, editTodo, deleteTodo, toggleRole, stopwatchActive, stopwatchPaused, stopwatchStartTime, stopwatchAccumulatedTime } = useTodoStore()
   const [editing, setEditing] = useState(false)
   const [editValue, setEditValue] = useState(item.title)
+  const [editEstimate, setEditEstimate] = useState(item.estimate || '')
   const [justChecked, setJustChecked] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [elapsed, setElapsed] = useState(0)
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
   const checkControls = useAnimation()
+
+  const isActiveTimerTask = useCallback(() => {
+    if (!stopwatchActive || item.checked || item.isHeader || item.isCaret) return false
+    const firstUnchecked = allTodos?.find(t => !t.checked && !t.isHeader && !t.isCaret)
+    return firstUnchecked?.id === item.id
+  }, [stopwatchActive, item.checked, item.isHeader, item.isCaret, allTodos, item.id])()
+
+  useEffect(() => {
+    if (!isActiveTimerTask || (!stopwatchStartTime && !stopwatchAccumulatedTime)) {
+      setElapsed(0)
+      return
+    }
+
+    const update = () => {
+      const currentSession = stopwatchStartTime ? (Date.now() - stopwatchStartTime) : 0
+      setElapsed(Math.floor((stopwatchAccumulatedTime + currentSession) / 1000))
+    }
+
+    update()
+    if (!stopwatchPaused && stopwatchStartTime) {
+      const interval = setInterval(update, 1000)
+      return () => clearInterval(interval)
+    }
+  }, [isActiveTimerTask, stopwatchStartTime, stopwatchAccumulatedTime, stopwatchPaused])
+
+  const formatTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600)
+    const m = Math.floor((seconds % 3600) / 60)
+    const s = seconds % 60
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+  }
+
+  const formatEstimate = (minStr: string) => {
+    const totalMinutes = parseInt(minStr || '0')
+    if (isNaN(totalMinutes) || totalMinutes <= 0) return ''
+    const h = Math.floor(totalMinutes / 60)
+    const m = totalMinutes % 60
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:00`
+  }
+
+  const isOverTime = useMemo(() => {
+    const estimateMinutes = parseInt(item.estimate || '0')
+    if (isNaN(estimateMinutes) || estimateMinutes <= 0) return false
+    return elapsed > estimateMinutes * 60
+  }, [item.estimate, elapsed])
 
   useEffect(() => {
     if (editing && inputRef.current) inputRef.current.select()
@@ -128,12 +175,20 @@ export default function TodoItem({
 
   // Update editValue when item title changes externally
   useEffect(() => {
-    if (!editing) setEditValue(item.title)
-  }, [item.title, editing])
+    if (!editing) {
+      setEditValue(item.title)
+      setEditEstimate(item.estimate || '')
+    }
+  }, [item.title, item.estimate, editing])
 
   const commitEdit = () => {
-    if (editValue.trim()) editTodo(tabId, item.id, editValue.trim())
-    else setEditValue(item.title)
+    const finalTitle = editValue.trim()
+    if (finalTitle) {
+      editTodo(tabId, item.id, finalTitle, item.isHeader ? '' : editEstimate.trim())
+    } else {
+      setEditValue(item.title)
+      setEditEstimate(item.estimate || '')
+    }
     setEditing(false)
   }
 
@@ -192,6 +247,7 @@ export default function TodoItem({
     <Reorder.Item
       value={item}
       id={item.id}
+      dragListener={!editing}
       className="group relative"
       initial={{ opacity: 0, y: 10, scale: 0.97 }}
       animate={isDeleting
@@ -262,33 +318,71 @@ export default function TodoItem({
 
           {/* title */}
           {editing ? (
-            <input
-              ref={inputRef}
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              onBlur={commitEdit}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') commitEdit()
-                if (e.key === 'Escape') {
-                  setEditValue(item.title)
-                  setEditing(false)
-                }
-              }}
-              className="flex-1 bg-surface-2 px-2.5 py-1 text-sm text-ink
-                outline-none border border-accent/40 focus:border-accent shadow-sm"
-            />
+            <div className="flex-1 flex flex-col gap-1">
+              <textarea
+                ref={inputRef as any}
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onBlur={commitEdit}
+                onKeyDown={(e) => {
+                  if (e.nativeEvent.isComposing) return
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    commitEdit()
+                  }
+                  if (e.key === 'Escape') {
+                    setEditValue(item.title)
+                    setEditEstimate(item.estimate || '')
+                    setEditing(false)
+                  }
+                }}
+                rows={1}
+                className="w-full bg-surface-2 px-2.5 py-1 text-sm text-ink
+                  outline-none border border-accent/40 focus:border-accent shadow-sm resize-none leading-relaxed"
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement
+                  target.style.height = 'auto'
+                  target.style.height = `${target.scrollHeight}px`
+                }}
+              />
+              {!item.isHeader && (
+                <input 
+                  value={editEstimate}
+                  onChange={(e) => setEditEstimate(e.target.value)}
+                  onBlur={commitEdit}
+                  placeholder="作業時間（分）"
+                  className="w-24 bg-surface-2 px-2 py-0.5 text-[10px] text-ink outline-none border border-black/5"
+                />
+              )}
+            </div>
           ) : (
-            <span
-              onDoubleClick={() => setEditing(true)}
-              className={`
-                flex-1 leading-relaxed cursor-default select-none
-                transition-all duration-300
-                ${item.isHeader ? 'text-base font-bold' : 'text-sm'}
-                ${item.checked && !item.isHeader ? 'line-through opacity-50' : ''}
-              `}
-            >
-              {item.title || (item.isHeader ? '名称未設定ヘッダー' : '名称未設定タスク')}
-            </span>
+            <div className="flex-1 flex flex-col min-w-0">
+              <span
+                onDoubleClick={() => setEditing(true)}
+                className={`
+                  leading-relaxed cursor-default select-none line-clamp-3 whitespace-pre-wrap
+                  transition-all duration-300
+                  ${item.isHeader ? 'text-base font-bold' : 'text-sm'}
+                  ${item.checked && !item.isHeader ? 'line-through opacity-50' : ''}
+                `}
+              >
+                {item.title || (item.isHeader ? '名称未設定ヘッダー' : '名称未設定タスク')}
+              </span>
+            {!item.isHeader && (item.estimate || isActiveTimerTask) && (
+              <div className="flex items-center gap-2 mt-0.5">
+                {isActiveTimerTask && (
+                  <span className={`font-mono text-[10px] font-bold ${isOverTime ? 'text-red-500' : 'text-accent'}`}>
+                    {formatTime(elapsed)}
+                  </span>
+                )}
+                {item.estimate && (
+                  <span className="text-ink-faint text-[10px] italic">
+                    {formatEstimate(item.estimate)}
+                  </span>
+                )}
+              </div>
+            )}
+            </div>
           )}
 
           {item.isHeader && headerStats !== null && (
