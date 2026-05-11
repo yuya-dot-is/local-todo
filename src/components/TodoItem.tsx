@@ -1,11 +1,10 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useCallback, useRef, useEffect, useState } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
 import { useTodoStore } from '../store/useTodoStore'
 import type { TodoItem as TodoItemType } from '../types'
 import TodoItemCheckbox from './TodoItemCheckbox'
 import TodoItemCaret from './TodoItemCaret'
 import TodoItemActions from './TodoItemActions'
-import TodoItemEditor from './TodoItemEditor'
 import TodoItemTitle from './TodoItemTitle'
 
 interface Props {
@@ -13,22 +12,13 @@ interface Props {
 }
 
 export default function TodoItem({ item }: Props) {
-  const { toggleTodo, editTodo, deleteTodo } = useTodoStore()
-  const [editing, setEditing] = useState(false)
-  const [editValue, setEditValue] = useState(item.title)
+  const { toggleTodo, deleteTodo, editingTodoId, setEditingTodoId } = useTodoStore()
   const [isDraggable, setIsDraggable] = useState(false)
   const dragControls = useDragControls()
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const commitEdit = () => {
-    const finalTitle = editValue.trim()
-    if (finalTitle) {
-      editTodo(item.id, finalTitle)
-    } else {
-      setEditValue(item.title)
-    }
-    setEditing(false)
-  }
+  
+  // To handle double tap (or second tap when "selected")
+  const isEditing = editingTodoId === item.id
 
   const handleCheck = useCallback(() => {
     toggleTodo(item.id)
@@ -36,7 +26,7 @@ export default function TodoItem({ item }: Props) {
 
   // Long press logic
   const onPointerDown = (e: React.PointerEvent) => {
-    if (editing) return
+    if (isEditing) return
     timerRef.current = setTimeout(() => {
       setIsDraggable(true)
       dragControls.start(e)
@@ -48,6 +38,14 @@ export default function TodoItem({ item }: Props) {
       clearTimeout(timerRef.current)
       timerRef.current = null
     }
+  }
+
+  const handleItemClick = () => {
+    // If not editing, first tap shows icons (via CSS hover/group),
+    // but the user wants "second tap to edit". 
+    // On mobile, first tap triggers hover. If we detect another tap while "hovered/selected", we edit.
+    // For simplicity and better UX, we'll set the editing ID.
+    setEditingTodoId(item.id)
   }
 
   useEffect(() => {
@@ -69,7 +67,7 @@ export default function TodoItem({ item }: Props) {
       initial={{ opacity: 0 }}
       animate={{ 
         opacity: 1, 
-        backgroundColor: isDraggable ? '#f0fdf4' : '#ffffff' 
+        backgroundColor: isEditing ? '#f0fdf4' : (isDraggable ? '#f0fdf4' : '#ffffff')
       }}
       exit={{ opacity: 0, height: 0 }}
       whileDrag={{ 
@@ -92,40 +90,24 @@ export default function TodoItem({ item }: Props) {
         onPointerDown={onPointerDown}
         onPointerUp={clearTimer}
         onPointerCancel={clearTimer}
-        onPointerMove={() => {
-          if (!isDraggable && timerRef.current) {
-            // Optional: add movement threshold here
-          }
-        }}
-        className="flex items-center gap-3 py-3 px-2 transition-colors duration-150 hover:bg-black/[0.02]"
+        onClick={handleItemClick}
+        className={`flex items-center gap-3 py-3 px-2 transition-colors duration-150 hover:bg-black/[0.02] ${isEditing ? 'ring-1 ring-inset ring-accent/30' : ''}`}
       >
         <TodoItemCheckbox
           checked={item.checked}
           handleCheck={handleCheck}
         />
 
-        {editing ? (
-          <TodoItemEditor
-            editValue={editValue}
-            setEditValue={setEditValue}
-            commitEdit={commitEdit}
-            cancelEdit={() => {
-              setEditValue(item.title)
-              setEditing(false)
-            }}
+        <div className="flex-1 min-w-0">
+          <TodoItemTitle
+            title={item.title}
+            checked={item.checked}
+            onDoubleClick={() => setEditingTodoId(item.id)}
           />
-        ) : (
-          <div className="flex-1 min-w-0">
-            <TodoItemTitle
-              title={item.title}
-              checked={item.checked}
-              onDoubleClick={() => setEditing(true)}
-            />
-          </div>
-        )}
+        </div>
 
         <TodoItemActions
-          onEdit={() => setEditing(true)}
+          onEdit={() => setEditingTodoId(item.id)}
           onDelete={() => deleteTodo(item.id)}
         />
       </div>

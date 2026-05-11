@@ -14,10 +14,13 @@ export const useTodoStore = create<TodoStore>()(
   persist(
     (set) => ({
       todos: initialTodos(),
+      editingTodoId: null,
+
+      setEditingTodoId: (id) => set({ editingTodoId: id }),
 
       addTodo: (title) =>
         set((s) => {
-          let todos = [...s.todos]
+          const todos = [...s.todos]
           let caretIdx = todos.findIndex(t => t.isCaret)
           if (caretIdx === -1) {
             const newCaret: TodoItem = {
@@ -59,6 +62,9 @@ export const useTodoStore = create<TodoStore>()(
       reorderTodos: (newTodos) =>
         set({ todos: newTodos }),
     }),
-    { name: 'local-todo-storage' }
+    { 
+      name: 'local-todo-storage',
+      partialize: (state) => ({ todos: state.todos }) // Don't persist editing state
+    }
   )
 )
