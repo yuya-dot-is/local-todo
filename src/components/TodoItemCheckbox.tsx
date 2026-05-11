@@ -2,14 +2,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 interface Props {
   checked: boolean
-  handleCheck: () => void
+  handleCheck: (e: React.MouseEvent) => void
 }
 
 export default function TodoItemCheckbox({ checked, handleCheck }: Props) {
   return (
     <motion.button
       whileTap={{ scale: 0.9 }}
-      onClick={handleCheck}
+      onClick={(e) => handleCheck(e)}
       className={`
         w-8 h-8 border-2 rounded-lg flex items-center justify-center transition-colors
         ${checked ? 'bg-accent border-accent' : 'border-black/15 bg-white'}

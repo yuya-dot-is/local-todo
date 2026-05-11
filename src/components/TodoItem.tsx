@@ -19,18 +19,17 @@ export default function TodoItem({ item }: Props) {
   const itemRef = useRef<HTMLDivElement>(null)
   const isEditing = editingTodoId === item.id
   const isAnyEditing = editingTodoId !== null
-  // Show live-typed value when editing, otherwise show stored title
   const displayTitle = isEditing ? editingValue : item.title
 
-  const handleCheck = useCallback(() => {
+  const handleCheck = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (isAnyEditing) return
     toggleTodo(item.id)
-  }, [item.id, toggleTodo])
+  }, [item.id, toggleTodo, isAnyEditing])
 
   const onPointerDown = (e: React.PointerEvent) => {
-    // Block drag when editing mode is active
     if (isAnyEditing) return
     timerRef.current = setTimeout(() => {
-      // Clear any existing text selection before starting drag
       window.getSelection()?.removeAllRanges()
       setIsDraggable(true)
       dragControls.start(e)
@@ -38,10 +37,7 @@ export default function TodoItem({ item }: Props) {
   }
 
   const onPointerMove = () => {
-    // If timer is pending (long-press not yet triggered), cancel it on move to allow scroll
-    if (!isDraggable && timerRef.current) {
-      clearTimer()
-    }
+    if (!isDraggable && timerRef.current) clearTimer()
   }
 
   const clearTimer = () => {
@@ -54,9 +50,8 @@ export default function TodoItem({ item }: Props) {
   // Scroll editing item into view when keyboard appears
   useEffect(() => {
     if (!isEditing || !itemRef.current) return
-    // Delay to let the keyboard finish animating in
     const t = setTimeout(() => {
-      itemRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      itemRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     }, 300)
     return () => clearTimeout(t)
   }, [isEditing])
@@ -66,6 +61,8 @@ export default function TodoItem({ item }: Props) {
   if (item.isCaret) {
     return <TodoItemCaret item={item} />
   }
+
+  const dimmed = isAnyEditing && !isEditing
 
   return (
     <Reorder.Item
@@ -77,7 +74,7 @@ export default function TodoItem({ item }: Props) {
       className={`group relative${isDraggable ? ' select-none' : ''}`}
       initial={{ opacity: 0 }}
       animate={{
-        opacity: 1,
+        opacity: dimmed ? 0.3 : 1,
         backgroundColor: isEditing || isDraggable ? '#f0fdf4' : '#ffffff',
         scale: isDraggable ? 1.04 : 1,
         zIndex: isDraggable ? 50 : 0,
@@ -87,7 +84,7 @@ export default function TodoItem({ item }: Props) {
       }}
       exit={{ opacity: 0, height: 0 }}
       onDragEnd={() => { setIsDraggable(false); clearTimer() }}
-      transition={{ type: 'spring', stiffness: 400, damping: 30, opacity: { duration: 0.1 } }}
+      transition={{ type: 'spring', stiffness: 400, damping: 30, opacity: { duration: 0.15 } }}
     >
       <div
         ref={itemRef}
@@ -95,8 +92,8 @@ export default function TodoItem({ item }: Props) {
         onPointerUp={clearTimer}
         onPointerCancel={clearTimer}
         onPointerMove={onPointerMove}
-        onClick={() => setEditingTodoId(item.id)}
-        className={`flex items-center gap-3 py-3 px-2 transition-colors duration-150 hover:bg-black/[0.02]${isEditing ? ' ring-1 ring-inset ring-accent/30' : ''}`}
+        onClick={() => { if (!isAnyEditing) setEditingTodoId(item.id) }}
+        className={`flex items-center gap-3 py-3 px-2 transition-colors duration-150${isEditing ? ' ring-1 ring-inset ring-accent/30' : ' hover:bg-black/[0.02]'}${dimmed ? ' pointer-events-none' : ''}`}
       >
         <TodoItemCheckbox checked={item.checked} handleCheck={handleCheck} />
 
@@ -104,10 +101,10 @@ export default function TodoItem({ item }: Props) {
           <TodoItemTitle title={displayTitle} checked={item.checked} />
         </div>
 
-        <TodoItemActions
-          onEdit={() => setEditingTodoId(item.id)}
-          onDelete={() => deleteTodo(item.id)}
-        />
+        {/* Only show delete button when not in editing mode */}
+        {!isAnyEditing && (
+          <TodoItemActions onDelete={() => deleteTodo(item.id)} />
+        )}
       </div>
     </Reorder.Item>
   )

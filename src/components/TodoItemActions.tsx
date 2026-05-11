@@ -1,25 +1,15 @@
 import { motion } from 'framer-motion'
 
 interface Props {
-  onEdit: () => void
   onDelete: () => void
 }
 
-export default function TodoItemActions({ onEdit, onDelete }: Props) {
+export default function TodoItemActions({ onDelete }: Props) {
   return (
     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
       <motion.button
         whileTap={{ scale: 0.85 }}
-        onClick={onEdit}
-        className="w-10 h-10 flex items-center justify-center text-ink-faint hover:text-ink hover:bg-black/5 rounded-full transition-colors"
-      >
-        <svg width="18" height="18" viewBox="0 0 12 12" fill="none">
-          <path d="M8.5 1.5L10.5 3.5L4 10H2V8L8.5 1.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </motion.button>
-      <motion.button
-        whileTap={{ scale: 0.85 }}
-        onClick={onDelete}
+        onClick={(e) => { e.stopPropagation(); onDelete() }}
         className="w-10 h-10 flex items-center justify-center text-ink-faint hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
       >
         <svg width="16" height="18" viewBox="0 0 11 12" fill="none">

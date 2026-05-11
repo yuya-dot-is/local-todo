@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { AnimatePresence, Reorder } from 'framer-motion'
 import { useTodoStore } from '../store/useTodoStore'
 import TodoItemComponent from './TodoItem'
@@ -6,10 +7,23 @@ import TodoEditor from './TodoEditor'
 
 export default function TodoList() {
   const { todos, addTodo, reorderTodos, editingTodoId } = useTodoStore()
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  // When a new task is added, scroll the caret into view
+  const handleAdd = (title: string) => {
+    addTodo(title)
+    setTimeout(() => {
+      // The caret element is identified by its text content / data attribute
+      if (scrollRef.current) {
+        const caretEl = scrollRef.current.querySelector('[data-caret="true"]')
+        caretEl?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }, 80)
+  }
 
   return (
     <div className="flex-1 flex flex-col min-h-0 relative">
-      <div className="flex-1 overflow-y-auto scrollbar-thin pb-24">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin pb-24">
         <Reorder.Group
           axis="y"
           values={todos}
@@ -29,7 +43,7 @@ export default function TodoList() {
           <TodoEditor />
         ) : (
           <div className="bg-gradient-to-t from-white via-white/95 to-transparent pt-8 p-2">
-            <TodoInput onAdd={addTodo} />
+            <TodoInput onAdd={handleAdd} />
           </div>
         )}
       </div>

@@ -13,6 +13,7 @@ export default function TodoItemCaret({ item }: Props) {
   const [isDraggable, setIsDraggable] = useState(false)
   const dragControls = useDragControls()
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const caretRef = useRef<HTMLDivElement>(null)
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (isAnyEditing) return
@@ -41,7 +42,7 @@ export default function TodoItemCaret({ item }: Props) {
       layout
       dragListener={false}
       dragControls={dragControls}
-      className={`group py-1 ${isDraggable ? 'select-none' : ''}`}
+      className={`group py-1${isDraggable ? ' select-none' : ''}${isAnyEditing ? ' opacity-30 pointer-events-none' : ''}`}
       animate={{
         backgroundColor: isDraggable ? '#f0fdf4' : 'transparent',
         scale: isDraggable ? 1.04 : 1,
@@ -55,7 +56,9 @@ export default function TodoItemCaret({ item }: Props) {
         clearTimer()
       }}
     >
-      <div 
+      <div
+        ref={caretRef}
+        data-caret="true"
         onPointerDown={onPointerDown}
         onPointerUp={clearTimer}
         onPointerCancel={clearTimer}
@@ -64,7 +67,7 @@ export default function TodoItemCaret({ item }: Props) {
         <div className="flex-1 h-1 bg-accent/30 rounded-full relative ml-2">
           <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-accent/40" />
         </div>
-        <span className="text-[10px] text-accent/60 font-bold px-1 flex-shrink-0 select-none uppercase tracking-wider">Add Here</span>
+        <span className="text-[10px] text-accent/60 font-bold px-1 flex-shrink-0 select-none tracking-wider">ここに追加</span>
       </div>
     </Reorder.Item>
   )
