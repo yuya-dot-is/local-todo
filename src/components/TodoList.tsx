@@ -13,7 +13,7 @@ export default function TodoList({ todos }: Props) {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 relative">
-      <div className="flex-1 overflow-y-auto scrollbar-thin pr-1 -mr-1 px-4 pt-4 pb-20">
+      <div className="flex-1 overflow-y-auto scrollbar-thin pr-1 -mr-1 pb-20">
         <Reorder.Group
           axis="y"
           values={todos}
@@ -21,12 +21,10 @@ export default function TodoList({ todos }: Props) {
           className="flex flex-col gap-0.5"
         >
           <AnimatePresence initial={false}>
-            {todos.map((todo, idx) => (
+            {todos.map((todo) => (
               <TodoItemComponent
                 key={todo.id}
                 item={todo}
-                allTodos={todos}
-                index={idx}
               />
             ))}
           </AnimatePresence>

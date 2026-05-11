@@ -56,7 +56,7 @@ export default function TodoItem({
       transition={{ type: 'spring', stiffness: 600, damping: 25 }}
     >
       <div className="relative">
-        <div className="flex items-center gap-3 py-3 px-4 transition-colors duration-150 hover:bg-black/[0.03] bg-white">
+        <div className="flex items-center gap-3 py-3 px-2 transition-colors duration-150 hover:bg-black/[0.03] bg-white">
           <TodoItemCheckbox
             checked={item.checked}
             handleCheck={handleCheck}
