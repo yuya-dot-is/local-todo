@@ -11,6 +11,11 @@ export default function TodoItemCaret({ item }: Props) {
       value={item}
       id={item.id}
       className="group py-1"
+      whileDrag={{ 
+        scale: 1.05, 
+        zIndex: 50,
+        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)' 
+      }}
     >
       <div className="flex items-center gap-2 px-2 h-10 hover:bg-black/[0.03] transition-colors group">
         <div className="flex-1 h-1 bg-accent/30 rounded-full relative ml-2">
