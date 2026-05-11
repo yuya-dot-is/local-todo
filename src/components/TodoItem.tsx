@@ -16,18 +16,31 @@ export default function TodoItem({ item }: Props) {
   const [isDraggable, setIsDraggable] = useState(false)
   const dragControls = useDragControls()
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const itemRef = useRef<HTMLDivElement>(null)
   const isEditing = editingTodoId === item.id
+  // Disable drag entirely when any task is being edited
+  const isAnyEditing = editingTodoId !== null
 
   const handleCheck = useCallback(() => {
     toggleTodo(item.id)
   }, [item.id, toggleTodo])
 
   const onPointerDown = (e: React.PointerEvent) => {
-    if (isEditing) return
+    // Block drag when editing mode is active
+    if (isAnyEditing) return
     timerRef.current = setTimeout(() => {
+      // Clear any existing text selection before starting drag
+      window.getSelection()?.removeAllRanges()
       setIsDraggable(true)
       dragControls.start(e)
     }, 500)
+  }
+
+  const onPointerMove = () => {
+    // If timer is pending (long-press not yet triggered), cancel it on move to allow scroll
+    if (!isDraggable && timerRef.current) {
+      clearTimer()
+    }
   }
 
   const clearTimer = () => {
@@ -36,6 +49,16 @@ export default function TodoItem({ item }: Props) {
       timerRef.current = null
     }
   }
+
+  // Scroll editing item into view when keyboard appears
+  useEffect(() => {
+    if (!isEditing || !itemRef.current) return
+    // Delay to let the keyboard finish animating in
+    const t = setTimeout(() => {
+      itemRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 300)
+    return () => clearTimeout(t)
+  }, [isEditing])
 
   useEffect(() => () => clearTimer(), [])
 
@@ -66,9 +89,11 @@ export default function TodoItem({ item }: Props) {
       transition={{ type: 'spring', stiffness: 400, damping: 30, opacity: { duration: 0.1 } }}
     >
       <div
+        ref={itemRef}
         onPointerDown={onPointerDown}
         onPointerUp={clearTimer}
         onPointerCancel={clearTimer}
+        onPointerMove={onPointerMove}
         onClick={() => setEditingTodoId(item.id)}
         className={`flex items-center gap-3 py-3 px-2 transition-colors duration-150 hover:bg-black/[0.02]${isEditing ? ' ring-1 ring-inset ring-accent/30' : ''}`}
       >

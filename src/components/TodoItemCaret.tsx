@@ -1,18 +1,23 @@
 import { useState, useRef, useEffect } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
 import type { TodoItem as TodoItemType } from '../types'
+import { useTodoStore } from '../store/useTodoStore'
 
 interface Props {
   item: TodoItemType
 }
 
 export default function TodoItemCaret({ item }: Props) {
+  const { editingTodoId } = useTodoStore()
+  const isAnyEditing = editingTodoId !== null
   const [isDraggable, setIsDraggable] = useState(false)
   const dragControls = useDragControls()
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const onPointerDown = (e: React.PointerEvent) => {
+    if (isAnyEditing) return
     timerRef.current = setTimeout(() => {
+      window.getSelection()?.removeAllRanges()
       setIsDraggable(true)
       dragControls.start(e)
     }, 500)
