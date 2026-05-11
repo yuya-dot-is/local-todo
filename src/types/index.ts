@@ -6,25 +6,13 @@ export interface TodoItem {
   isCaret: boolean
 }
 
-export interface Tab {
-  id: string
-  name: string
-  todos: TodoItem[]
-}
-
 export interface TodoStore {
-  tabs: Tab[]
-  activeTabIndex: number
+  todos: TodoItem[]
   showInfoTab: boolean
   setShowInfoTab: (show: boolean) => void
-  addTab: () => void
-  renameTab: (tabId: string, name: string) => void
-  deleteTab: (tabId: string) => void
-  reorderTabs: (tabs: Tab[]) => void
-  setActiveTab: (index: number) => void
-  addTodo: (tabId: string, title: string) => void
-  editTodo: (tabId: string, todoId: string, title: string) => void
-  toggleTodo: (tabId: string, todoId: string) => void
-  deleteTodo: (tabId: string, todoId: string) => void
-  reorderTodos: (tabId: string, newTodos: TodoItem[]) => void
+  addTodo: (title: string) => void
+  editTodo: (todoId: string, title: string) => void
+  toggleTodo: (todoId: string) => void
+  deleteTodo: (todoId: string) => void
+  reorderTodos: (newTodos: TodoItem[]) => void
 }

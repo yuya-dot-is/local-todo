@@ -9,14 +9,12 @@ import TodoItemEditor from './TodoItemEditor'
 import TodoItemTitle from './TodoItemTitle'
 
 interface Props {
-  tabId: string
   item: TodoItemType
   allTodos?: TodoItemType[]
   index?: number
 }
 
 export default function TodoItem({
-  tabId,
   item,
 }: Props) {
   const { toggleTodo, editTodo, deleteTodo } = useTodoStore()
@@ -26,7 +24,7 @@ export default function TodoItem({
   const commitEdit = () => {
     const finalTitle = editValue.trim()
     if (finalTitle) {
-      editTodo(tabId, item.id, finalTitle)
+      editTodo(item.id, finalTitle)
     } else {
       setEditValue(item.title)
     }
@@ -34,11 +32,11 @@ export default function TodoItem({
   }
 
   const handleCheck = useCallback(() => {
-    toggleTodo(tabId, item.id)
-  }, [tabId, item.id, toggleTodo])
+    toggleTodo(item.id)
+  }, [item.id, toggleTodo])
 
   const handleDelete = () => {
-    deleteTodo(tabId, item.id)
+    deleteTodo(item.id)
   }
 
   if (item.isCaret) {

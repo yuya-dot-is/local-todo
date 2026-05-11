@@ -1,10 +1,10 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTodoStore } from './store/useTodoStore'
-import TabBar from './components/TabBar'
 import TodoList from './components/TodoList'
 import DataNotice from './components/DataNotice'
 
-function InfoTab() {
+function InfoView() {
+  const { setShowInfoTab } = useTodoStore()
   return (
     <div className="flex flex-col gap-6 items-center pt-8 px-4 text-center">
       <div className="flex items-center gap-3">
@@ -28,52 +28,74 @@ function InfoTab() {
           <h3 className="font-bold text-ink mb-2">💡 使い方・TIPS</h3>
           <ul className="list-disc list-inside space-y-1">
             <li>タスクを掴んで上下にドラッグ＆ドロップで並べ替え</li>
-            <li>「H」ボタンでタスクを<strong>ヘッダー</strong>に切り替え可能</li>
-            <li>タブを追加して、プロジェクトやカテゴリごとに管理</li>
+            <li>「ここに追加」のプレースホルダー付近に新しいタスクが追加されます</li>
+            <li>ブラウザを閉じてもデータは保持されます</li>
           </ul>
         </div>
       </div>
+
+      <button
+        onClick={() => setShowInfoTab(false)}
+        className="px-6 py-2 bg-accent text-white font-bold rounded-full shadow-md hover:bg-accent-hover transition-colors"
+      >
+        閉じる
+      </button>
     </div>
   )
 }
 
 export default function App() {
-  const { tabs, activeTabIndex, showInfoTab } = useTodoStore()
-  const activeTab = tabs[activeTabIndex] ?? tabs[0]
+  const { todos, showInfoTab, setShowInfoTab } = useTodoStore()
 
   return (
     <div className="h-screen flex flex-col text-ink antialiased overflow-hidden">
-
       {/* main layout */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin flex flex-col max-w-2xl w-full mx-auto px-2 sm:px-0 pt-2">
+      <div className="flex-1 overflow-y-auto scrollbar-thin flex flex-col max-w-2xl w-full mx-auto px-2 sm:px-0 pt-6">
 
-        {/* tab bar */}
-        <TabBar />
+        <header className="flex justify-between items-center px-4 mb-4">
+          <h1 className="text-xl font-bold tracking-tight text-ink flex items-center gap-2">
+            <span className="w-2 h-6 bg-accent rounded-full" />
+            My Tasks
+          </h1>
+          <button
+            onClick={() => setShowInfoTab(true)}
+            className="w-8 h-8 flex items-center justify-center text-ink-faint hover:text-ink hover:bg-black/5 rounded-full transition-colors"
+            title="Info"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+          </button>
+        </header>
 
-        {/* tab content card */}
+        {/* content card */}
         <main
-          className="flex-1 bg-white/85 backdrop-blur-glass shadow-card flex flex-col min-h-0 relative"
+          className="flex-1 bg-white/85 backdrop-blur-glass shadow-card flex flex-col min-h-0 relative rounded-t-3xl"
         >
           <AnimatePresence mode="wait">
-            <motion.div
-              key={showInfoTab ? 'info' : activeTab?.id}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              transition={{ duration: 0.16 }}
-              className="flex-1 flex flex-col min-h-0"
-            >
-              {showInfoTab ? (
-                <div className="flex-1 overflow-y-auto p-4 pb-12">
-                  <InfoTab />
-                </div>
-              ) : activeTab ? (
-                <TodoList
-                  tabId={activeTab.id}
-                  todos={activeTab.todos}
-                />
-              ) : null}
-            </motion.div>
+            {showInfoTab ? (
+              <motion.div
+                key="info"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="flex-1 overflow-y-auto p-4 pb-12"
+              >
+                <InfoView />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="list"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex-1 flex flex-col min-h-0"
+              >
+                <TodoList todos={todos} />
+              </motion.div>
+            )}
           </AnimatePresence>
         </main>
       </div>
