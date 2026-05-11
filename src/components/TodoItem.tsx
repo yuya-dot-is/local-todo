@@ -40,18 +40,19 @@ export default function TodoItem({ item }: Props) {
       value={item}
       id={item.id}
       dragListener={!editing}
-      className="group relative"
+      className="group relative bg-white"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6, height: 0 }}
       whileDrag={{ 
         scale: 1.05, 
         zIndex: 50,
+        backgroundColor: '#f0fdf4', // bg-green-50
         boxShadow: '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)' 
       }}
       transition={{ type: 'spring', stiffness: 600, damping: 25 }}
     >
-      <div className="flex items-center gap-3 py-3 px-2 transition-colors duration-150 hover:bg-black/[0.03] bg-white">
+      <div className="flex items-center gap-3 py-3 px-2 transition-colors duration-150 hover:bg-black/[0.02]">
         <TodoItemCheckbox
           checked={item.checked}
           handleCheck={handleCheck}
