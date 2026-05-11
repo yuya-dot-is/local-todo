@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { flushSync } from 'react-dom'
 import { Reorder, useDragControls } from 'framer-motion'
 import type { TodoItem as TodoItemType } from '../types'
 import { useTodoStore } from '../store/useTodoStore'
@@ -17,20 +18,21 @@ export default function TodoItemCaret({ item }: Props) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  // Focus the textarea when entering input mode
-  useEffect(() => {
-    if (!isInputMode) return
-    setTimeout(() => {
-      inputRef.current?.focus()
-    }, 0)
-  }, [isInputMode])
-
   const handleSubmit = () => {
     if (inputValue.trim()) {
       addTodo(inputValue.trim())
       setInputValue('')
     }
     setIsInputMode(false)
+  }
+
+  const handlePlusClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    // iOS/Mobile: 1タップで確実にキーボードを開くために flushSync を使用
+    flushSync(() => setIsInputMode(true))
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
   }
 
   const onPointerDown = (e: React.PointerEvent) => {
@@ -70,48 +72,47 @@ export default function TodoItemCaret({ item }: Props) {
       onDragEnd={() => { setIsDraggable(false); clearTimer() }}
     >
       {isInputMode ? (
-        // Inline input form mode
-        <div className="flex items-center gap-2 px-2 py-2 bg-accent/5 ring-1 ring-inset ring-accent/30">
+        // 入力モード: 垂直中央揃え (items-center)
+        <div className="flex items-center gap-2 px-2 py-2 bg-accent/5 ring-1 ring-inset ring-accent/30 min-h-[48px]">
           <textarea
             ref={inputRef}
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => {
+              setInputValue(e.target.value)
+              const el = e.target
+              el.style.height = 'auto'
+              el.style.height = `${el.scrollHeight}px`
+            }}
             onBlur={handleSubmit}
             onKeyDown={(e) => {
               if (e.nativeEvent.isComposing) return
-              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit() }
               if (e.key === 'Escape') { setInputValue(''); setIsInputMode(false) }
             }}
             placeholder="タスクを追加…"
             rows={1}
-            className="flex-1 bg-transparent text-sm text-ink placeholder-ink-faint outline-none resize-none leading-relaxed min-h-[24px]"
-            onInput={(e) => {
-              const el = e.target as HTMLTextAreaElement
-              el.style.height = 'auto'
-              el.style.height = `${el.scrollHeight}px`
-            }}
+            className="flex-1 bg-transparent text-sm text-ink placeholder-ink-faint outline-none resize-none leading-relaxed block"
           />
           <button
             onMouseDown={(e) => e.preventDefault()}
             onClick={handleSubmit}
-            className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full bg-accent text-white text-lg leading-none"
+            className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full bg-accent text-white text-xl leading-none shadow-sm active:scale-90 transition-transform"
           >
             ↑
           </button>
         </div>
       ) : (
-        // "+" button mode
+        // 「+」ボタンモード
         <div
           data-caret="true"
           onPointerDown={onPointerDown}
           onPointerUp={clearTimer}
           onPointerCancel={clearTimer}
-          className="flex items-center px-2 h-10 hover:bg-black/[0.02] transition-colors"
+          className="flex items-center px-2 h-12 hover:bg-black/[0.02] transition-colors"
         >
-          <div className="flex-1 h-px bg-accent/20 mr-2" />
+          <div className="flex-1 h-px bg-accent/20 mr-4" />
           <button
-            onClick={(e) => { e.stopPropagation(); setIsInputMode(true) }}
-            className="w-8 h-8 flex items-center justify-center rounded-full text-accent/70 hover:text-accent hover:bg-accent/8 transition-colors text-xl leading-none"
+            onClick={handlePlusClick}
+            className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full border-2 border-accent/40 text-accent/70 hover:border-accent hover:text-accent hover:bg-accent/5 transition-all text-2xl leading-none active:scale-90"
           >
             +
           </button>

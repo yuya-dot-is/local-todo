@@ -1,4 +1,5 @@
 import { useCallback, useRef, useEffect, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { Reorder, useDragControls } from 'framer-motion'
 import { useTodoStore } from '../store/useTodoStore'
 import type { TodoItem as TodoItemType } from '../types'
@@ -21,25 +22,17 @@ export default function TodoItem({ item }: Props) {
   const isEditing = editingTodoId === item.id
   const isAnyEditing = editingTodoId !== null
 
-  // Sync editValue when entering edit mode
-  useEffect(() => {
-    if (!isEditing) return
-    setEditValue(item.title)
-    setTimeout(() => {
-      if (textareaRef.current) {
-        textareaRef.current.focus()
-        const len = item.title.length
-        textareaRef.current.setSelectionRange(len, len)
-        textareaRef.current.style.height = 'auto'
-        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
-      }
-    }, 0)
-  }, [isEditing]) // eslint-disable-line react-hooks/exhaustive-deps
+  const syncTextareaHeight = () => {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }
 
   const commitEdit = () => {
     const value = editValue.trim()
     if (value) editTodo(item.id, value)
-    else setEditValue(item.title) // revert if empty
+    else setEditValue(item.title)
     setEditingTodoId(null)
   }
 
@@ -48,6 +41,26 @@ export default function TodoItem({ item }: Props) {
     if (isAnyEditing) return
     toggleTodo(item.id)
   }, [item.id, toggleTodo, isAnyEditing])
+
+  const handleItemClick = (e: React.MouseEvent) => {
+    if (isAnyEditing && !isEditing) return
+    if (isEditing) return
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    // 1回のタップで確実に編集モードへ移行させるための flushSync
+    setEditValue(item.title)
+    flushSync(() => {
+      setEditingTodoId(item.id)
+    })
+
+    if (textareaRef.current) {
+      textareaRef.current.focus()
+      textareaRef.current.setSelectionRange(textareaRef.current.value.length, textareaRef.current.value.length)
+      syncTextareaHeight()
+    }
+  }
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (isAnyEditing) return
@@ -104,10 +117,11 @@ export default function TodoItem({ item }: Props) {
         onPointerUp={clearTimer}
         onPointerCancel={clearTimer}
         onPointerMove={onPointerMove}
-        onClick={() => { if (!isAnyEditing) setEditingTodoId(item.id) }}
-        className={`flex items-start gap-3 py-3 px-2 transition-colors duration-150${isEditing ? ' ring-1 ring-inset ring-accent/30' : ' hover:bg-black/[0.02]'}${dimmed ? ' pointer-events-none' : ''}`}
+        onClick={handleItemClick}
+        // items-center でチェックボックスとテキストを中央揃えに
+        className={`flex items-center gap-3 py-3 px-2 transition-colors duration-150${isEditing ? ' ring-1 ring-inset ring-accent/30' : ' hover:bg-black/[0.02]'}${dimmed ? ' pointer-events-none' : ''}`}
       >
-        <div className="mt-1 flex-shrink-0">
+        <div className="flex-shrink-0">
           <TodoItemCheckbox checked={item.checked} handleCheck={handleCheck} />
         </div>
 
@@ -116,21 +130,22 @@ export default function TodoItem({ item }: Props) {
             <textarea
               ref={textareaRef}
               value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
+              onChange={(e) => {
+                setEditValue(e.target.value)
+                // 自動リサイズ
+                const el = e.target
+                el.style.height = 'auto'
+                el.style.height = `${el.scrollHeight}px`
+              }}
               onBlur={commitEdit}
               onKeyDown={(e) => {
                 if (e.nativeEvent.isComposing) return
-                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commitEdit() }
+                // Escape でキャンセル
                 if (e.key === 'Escape') { setEditValue(item.title); setEditingTodoId(null) }
               }}
               rows={1}
               onClick={(e) => e.stopPropagation()}
-              className="w-full bg-transparent text-sm text-ink outline-none resize-none leading-relaxed"
-              onInput={(e) => {
-                const el = e.target as HTMLTextAreaElement
-                el.style.height = 'auto'
-                el.style.height = `${el.scrollHeight}px`
-              }}
+              className="w-full bg-transparent text-sm text-ink outline-none resize-none leading-relaxed block"
             />
           ) : (
             <TodoItemTitle title={item.title} checked={item.checked} />
