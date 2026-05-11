@@ -3,7 +3,7 @@ import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import { useTodoStore } from '../store/useTodoStore'
 
 export default function TabBar() {
-  const { tabs, activeTabIndex, addTab, renameTab, deleteTab, setActiveTab, reorderTabs } =
+  const { tabs, activeTabIndex, addTab, renameTab, deleteTab, setActiveTab, reorderTabs, showInfoTab, setShowInfoTab } =
     useTodoStore()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
@@ -29,8 +29,29 @@ export default function TabBar() {
   }
 
   return (
-    <div className="flex items-center gap-1 px-4 pt-4 pb-0 overflow-x-auto scrollbar-thin">
-      <Reorder.Group
+    <div className="flex items-end px-4 pt-4 pb-0">
+      {/* Info Tab Icon (Fixed on left) */}
+      <div
+        className={`
+          flex items-center justify-center px-4 py-2 cursor-pointer
+          border border-b-0 transition-colors flex-shrink-0
+          ${showInfoTab
+            ? 'bg-white border-black/8 shadow-tab text-accent'
+            : 'bg-accent border-transparent text-white hover:bg-accent-hover'
+          }
+        `}
+        style={{ borderRadius: 0 }}
+        onClick={() => setShowInfoTab(true)}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+      </div>
+
+      <div className="flex-1 flex items-center gap-1 ml-1 overflow-x-auto scrollbar-thin">
+        <Reorder.Group
         axis="x"
         values={tabs}
         onReorder={handleReorder}
@@ -38,7 +59,7 @@ export default function TabBar() {
       >
         <AnimatePresence initial={false}>
           {tabs.map((tab, idx) => {
-            const isActive = idx === activeTabIndex
+            const isActive = idx === activeTabIndex && !showInfoTab
             return (
               <Reorder.Item 
                 key={tab.id} 
@@ -51,14 +72,16 @@ export default function TabBar() {
                   exit={{ opacity: 0, scale: 0.85 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                   className={`
-                    relative flex items-center gap-1 px-4 py-2 rounded-t-xl cursor-pointer
+                    relative flex items-center gap-1 px-4 py-2 cursor-pointer
                     text-sm font-medium select-none whitespace-nowrap
+
                     border border-b-0 transition-colors
                     ${isActive
                       ? 'bg-white border-black/8 text-ink shadow-tab'
                       : 'bg-surface-2/70 border-transparent text-ink-muted hover:text-ink hover:bg-white/60'
                     }
                   `}
+                  style={{ borderRadius: 0 }}
                   onClick={() => setActiveTab(idx)}
                   onDoubleClick={() => startEdit(tab.id, tab.name)}
                 >
@@ -111,6 +134,8 @@ export default function TabBar() {
       >
         +
       </motion.button>
+
+      </div>
     </div>
   )
 }

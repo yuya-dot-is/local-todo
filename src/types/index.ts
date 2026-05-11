@@ -16,6 +16,8 @@ export interface Tab {
 export interface TodoStore {
   tabs: Tab[]
   activeTabIndex: number
+  showInfoTab: boolean
+  setShowInfoTab: (show: boolean) => void
   addTab: () => void
   renameTab: (tabId: string, name: string) => void
   deleteTab: (tabId: string) => void

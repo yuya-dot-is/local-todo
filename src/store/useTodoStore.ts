@@ -20,6 +20,9 @@ export const useTodoStore = create<TodoStore>()(
     (set) => ({
       tabs: [defaultTab()],
       activeTabIndex: 0,
+      showInfoTab: false,
+
+      setShowInfoTab: (show) => set({ showInfoTab: show }),
 
       addTab: () =>
         set((s) => ({ tabs: [...s.tabs, defaultTab()] })),
@@ -42,7 +45,7 @@ export const useTodoStore = create<TodoStore>()(
           return { tabs: newTabs }
         }),
 
-      setActiveTab: (index) => set({ activeTabIndex: index }),
+      setActiveTab: (index) => set({ activeTabIndex: index, showInfoTab: false }),
 
       addTodo: (tabId, title, isHeader = false) =>
         set((s) => ({
