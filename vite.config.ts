@@ -2,7 +2,10 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const repoName = process.env.GITHUB_REPOSITORY ? `/${process.env.GITHUB_REPOSITORY.split('/')[1]}/` : '/'
+
 export default defineConfig({
+  base: repoName,
   plugins: [
     react(),
     VitePWA({
@@ -15,7 +18,7 @@ export default defineConfig({
         theme_color: '#0f0f1a',
         background_color: '#0f0f1a',
         display: 'standalone',
-        start_url: '/',
+        start_url: repoName,
         icons: [
           {
             src: 'icons/icon-192.png',

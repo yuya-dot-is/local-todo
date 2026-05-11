@@ -12,8 +12,8 @@ function Logo() {
     <div className="flex items-center gap-3">
       {/* Title in Caveat */}
       <h1
-        className="text-[2.5rem] leading-none tracking-wide"
-        style={{ fontFamily: 'Shadows Into Light Two, cursive' }}
+        className="text-[1.5rem] leading-none tracking-wide"
+        style={{ fontFamily: 'Damion, cursive' }}
       >
         <span style={{ color: '#16a34a' }}>local</span>
         <span style={{ color: '#1a2332' }}> todo</span>
