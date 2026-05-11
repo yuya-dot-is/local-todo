@@ -45,7 +45,7 @@ export default function App() {
     <div className="h-screen flex flex-col text-ink antialiased overflow-hidden">
 
       {/* main layout */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin pr-1 -mr-1 flex flex-col max-w-2xl w-full mx-auto px-2 sm:px-0 pt-2 pb-8">
+      <div className="flex-1 overflow-y-auto scrollbar-thin pr-1 flex flex-col max-w-2xl w-full mx-auto px-2 sm:px-0 pt-2 pb-8">
 
         {/* tab bar */}
         <TabBar />
