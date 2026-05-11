@@ -3,8 +3,8 @@ export interface TodoItem {
   title: string
   checked: boolean
   createdAt: number
-  isHeader?: boolean
-  isCaret?: boolean
+  isHeader: boolean
+  isCaret: boolean
   estimate?: string
 }
 
@@ -31,7 +31,7 @@ export interface TodoStore {
   setStopwatch: (active: boolean) => void
   pauseStopwatch: (paused: boolean) => void
   resetStopwatch: () => void
-  addTodo: (tabId: string, title: string, isHeader?: boolean, estimate?: string) => void
+  addTodo: (tabId: string, title: string, isHeader: boolean, estimate?: string) => void
   editTodo: (tabId: string, todoId: string, title: string, estimate?: string) => void
   toggleTodo: (tabId: string, todoId: string) => void
   toggleRole: (tabId: string, todoId: string) => void

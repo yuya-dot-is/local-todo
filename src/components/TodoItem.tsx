@@ -1,51 +1,16 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
-import { motion, useAnimation, Reorder } from 'framer-motion'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Reorder } from 'framer-motion'
 import { useTodoStore } from '../store/useTodoStore'
 import type { TodoItem as TodoItemType } from '../types'
 import TodoItemCheckbox from './TodoItemCheckbox'
+import TodoItemDeleteParticles from './TodoItemDeleteParticles'
+import TodoItemCaret from './TodoItemCaret'
+import TodoItemActions from './TodoItemActions'
+import TodoItemStats from './TodoItemStats'
+import TodoItemTimer from './TodoItemTimer'
+import TodoItemEditor from './TodoItemEditor'
+import TodoItemTitle from './TodoItemTitle'
 
-// ─── Explosion fragments on delete ──────────────────────────────────────────
-const FRAG_COLORS = ['#ef4444', '#f97316', '#eab308', '#8b5cf6']
-
-function DeleteParticles({ active }: { active: boolean }) {
-  if (!active) return null
-  return (
-    <div className="absolute inset-0 pointer-events-none overflow-visible" style={{ zIndex: 20 }}>
-      {Array.from({ length: 10 }).map((_, i) => {
-        const angle = (i / 10) * 2 * Math.PI + Math.random() * 0.4
-        const dist = 30 + Math.random() * 30
-        const tx = Math.cos(angle) * dist
-        const ty = Math.sin(angle) * dist - 10
-        const color = FRAG_COLORS[i % FRAG_COLORS.length]
-        const size = 4 + Math.random() * 5
-        return (
-          <motion.div
-            key={i}
-            initial={{ x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 }}
-            animate={{
-              x: tx,
-              y: ty,
-              rotate: Math.random() * 360,
-              scale: 0,
-              opacity: 0,
-            }}
-            transition={{ duration: 0.4, ease: 'easeOut', delay: i * 0.01 }}
-            style={{
-              background: color,
-              width: size,
-              height: size,
-              borderRadius: Math.random() > 0.5 ? '50%' : '2px',
-            }}
-            className="absolute left-1/2 top-1/2"
-          />
-        )
-      })}
-    </div>
-  )
-}
-
-
-// ─── Main component ──────────────────────────────────────────────────────────
 interface Props {
   tabId: string
   item: TodoItemType
@@ -64,59 +29,13 @@ export default function TodoItem({
   const [editValue, setEditValue] = useState(item.title)
   const [editEstimate, setEditEstimate] = useState(item.estimate || '')
   const [isDeleting, setIsDeleting] = useState(false)
-  const [elapsed, setElapsed] = useState(0)
-  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
 
-  const isActiveTimerTask = useCallback(() => {
+  const isActiveTimerTask = useMemo(() => {
     if (!stopwatchActive || item.checked || item.isHeader || item.isCaret) return false
     const firstUnchecked = allTodos?.find(t => !t.checked && !t.isHeader && !t.isCaret)
     return firstUnchecked?.id === item.id
-  }, [stopwatchActive, item.checked, item.isHeader, item.isCaret, allTodos, item.id])()
+  }, [stopwatchActive, item.checked, item.isHeader, item.isCaret, allTodos, item.id])
 
-  useEffect(() => {
-    if (!isActiveTimerTask || (!stopwatchStartTime && !stopwatchAccumulatedTime)) {
-      setElapsed(0)
-      return
-    }
-
-    const update = () => {
-      const currentSession = stopwatchStartTime ? (Date.now() - stopwatchStartTime) : 0
-      setElapsed(Math.floor((stopwatchAccumulatedTime + currentSession) / 1000))
-    }
-
-    update()
-    if (!stopwatchPaused && stopwatchStartTime) {
-      const interval = setInterval(update, 1000)
-      return () => clearInterval(interval)
-    }
-  }, [isActiveTimerTask, stopwatchStartTime, stopwatchAccumulatedTime, stopwatchPaused])
-
-  const formatTime = (seconds: number) => {
-    const h = Math.floor(seconds / 3600)
-    const m = Math.floor((seconds % 3600) / 60)
-    const s = seconds % 60
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
-  }
-
-  const formatEstimate = (minStr: string) => {
-    const totalMinutes = parseInt(minStr || '0')
-    if (isNaN(totalMinutes) || totalMinutes <= 0) return ''
-    const h = Math.floor(totalMinutes / 60)
-    const m = totalMinutes % 60
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:00`
-  }
-
-  const isOverTime = useMemo(() => {
-    const estimateMinutes = parseInt(item.estimate || '0')
-    if (isNaN(estimateMinutes) || estimateMinutes <= 0) return false
-    return elapsed > estimateMinutes * 60
-  }, [item.estimate, elapsed])
-
-  useEffect(() => {
-    if (editing && inputRef.current) inputRef.current.select()
-  }, [editing])
-
-  // Update editValue when item title changes externally
   useEffect(() => {
     if (!editing) {
       setEditValue(item.title)
@@ -137,43 +56,32 @@ export default function TodoItem({
 
   const handleCheck = useCallback(() => {
     toggleTodo(tabId, item.id)
-  }, [item.checked, tabId, item.id, toggleTodo])
+  }, [tabId, item.id, toggleTodo])
 
   const handleDelete = () => {
     setIsDeleting(true)
     setTimeout(() => deleteTodo(tabId, item.id), 350)
   }
 
-  let headerStats = null
-  if (item.isHeader && allTodos && index !== undefined) {
-    let total = 0
-    let completed = 0
-    for (let i = index + 1; i < allTodos.length; i++) {
-      const t = allTodos[i]
-      if (t.isHeader) break
-      if (!t.isCaret) {
-        total++
-        if (t.checked) completed++
+  const headerStats = useMemo(() => {
+    if (item.isHeader && allTodos && index !== undefined) {
+      let total = 0
+      let completed = 0
+      for (let i = index + 1; i < allTodos.length; i++) {
+        const t = allTodos[i]
+        if (t.isHeader) break
+        if (!t.isCaret) {
+          total++
+          if (t.checked) completed++
+        }
       }
+      return { total, completed }
     }
-    headerStats = { total, completed }
-  }
+    return null
+  }, [item.isHeader, allTodos, index])
 
   if (item.isCaret) {
-    return (
-      <Reorder.Item
-        value={item}
-        id={item.id}
-        className="group py-0.5"
-      >
-        <div className="flex items-center gap-2 px-2 hover:bg-black/[0.03] transition-colors group">
-          <div className="flex-1 h-0.5 bg-accent/40 rounded-full relative ml-2">
-            <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-accent/40" />
-          </div>
-          <span className="text-[10px] text-accent/60 font-medium px-1 flex-shrink-0 select-none">ここに追加</span>
-        </div>
-      </Reorder.Item>
-    )
+    return <TodoItemCaret item={item} />
   }
 
   return (
@@ -191,9 +99,8 @@ export default function TodoItem({
       whileDrag={{ scale: 1.02, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)' }}
       transition={{ type: 'spring', stiffness: 600, damping: 25 }}
     >
-      {/* explosion particles overlay */}
       <div className="relative">
-        <DeleteParticles active={isDeleting} />
+        <TodoItemDeleteParticles active={isDeleting} />
 
         <div
           className={`
@@ -202,130 +109,60 @@ export default function TodoItem({
             ${item.isHeader ? 'bg-accent text-white shadow-md' : 'hover:bg-black/[0.03] bg-white'}
           `}
         >
-          {/* checkbox */}
           {!item.isHeader && (
             <TodoItemCheckbox
               checked={item.checked}
               handleCheck={handleCheck}
             />
           )}
-          {/* title */}
+
           {editing ? (
-            <div className="flex-1 flex flex-col gap-1">
-              <textarea
-                ref={inputRef as any}
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                onBlur={commitEdit}
-                onKeyDown={(e) => {
-                  if (e.nativeEvent.isComposing) return
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    commitEdit()
-                  }
-                  if (e.key === 'Escape') {
-                    setEditValue(item.title)
-                    setEditEstimate(item.estimate || '')
-                    setEditing(false)
-                  }
-                }}
-                rows={1}
-                className="w-full bg-surface-2 px-2.5 py-1 text-sm text-ink
-                  outline-none border border-accent/40 focus:border-accent shadow-sm resize-none leading-relaxed"
-                onInput={(e) => {
-                  const target = e.target as HTMLTextAreaElement
-                  target.style.height = 'auto'
-                  target.style.height = `${target.scrollHeight}px`
-                }}
+            <TodoItemEditor
+              editValue={editValue}
+              setEditValue={setEditValue}
+              editEstimate={editEstimate}
+              setEditEstimate={setEditEstimate}
+              commitEdit={commitEdit}
+              cancelEdit={() => {
+                setEditValue(item.title)
+                setEditEstimate(item.estimate || '')
+                setEditing(false)
+              }}
+              isHeader={item.isHeader}
+            />
+          ) : (
+            <div className="flex-1 flex flex-col min-w-0">
+              <TodoItemTitle
+                title={item.title}
+                isHeader={item.isHeader}
+                checked={item.checked}
+                onDoubleClick={() => setEditing(true)}
               />
               {!item.isHeader && (
-                <input
-                  value={editEstimate}
-                  onChange={(e) => setEditEstimate(e.target.value)}
-                  onBlur={commitEdit}
-                  placeholder="作業時間（分）"
-                  className="w-24 bg-surface-2 px-2 py-0.5 text-[10px] text-ink outline-none border border-black/5"
+                <TodoItemTimer
+                  isActive={isActiveTimerTask}
+                  stopwatchStartTime={stopwatchStartTime}
+                  stopwatchAccumulatedTime={stopwatchAccumulatedTime}
+                  stopwatchPaused={stopwatchPaused}
+                  estimate={item.estimate}
                 />
               )}
             </div>
-          ) : (
-            <div className="flex-1 flex flex-col min-w-0">
-              <span
-                onDoubleClick={() => setEditing(true)}
-                className={`
-                  leading-relaxed cursor-default select-none line-clamp-3 whitespace-pre-wrap
-                  transition-all duration-300
-                  ${item.isHeader ? 'text-base font-bold' : 'text-sm'}
-                  ${item.checked && !item.isHeader ? 'line-through opacity-50' : ''}
-                `}
-              >
-                {item.title || (item.isHeader ? '名称未設定ヘッダー' : '名称未設定タスク')}
-              </span>
-              {!item.isHeader && (item.estimate || isActiveTimerTask) && (
-                <div className="flex items-center gap-2 mt-0.5">
-                  {isActiveTimerTask && (
-                    <span className={`font-mono text-[10px] font-bold ${isOverTime ? 'text-red-500' : 'text-accent'}`}>
-                      {formatTime(elapsed)}
-                    </span>
-                  )}
-                  {item.estimate && (
-                    <span className="text-ink-faint text-[10px] italic">
-                      {formatEstimate(item.estimate)}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
           )}
 
-          {item.isHeader && headerStats !== null && (
-            <span className="text-[11px] text-white/90 font-medium px-2 py-0.5 bg-black/15 select-none ml-1">
-              {headerStats.completed} / {headerStats.total}
-            </span>
-          )}
+          {headerStats && <TodoItemStats {...headerStats} />}
 
-          {/* action buttons */}
-          <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-            <motion.button
-              whileTap={{ scale: 0.85 }}
-              onClick={() => toggleRole(tabId, item.id)}
-              title={item.isHeader ? "タスクに変更" : "ヘッダーに変更"}
-              className={`
-                w-10 h-10 flex items-center justify-center text-[10px] font-bold transition-colors
-                ${item.isHeader ? 'text-white/70 hover:text-white hover:bg-white/20' : 'text-ink-faint hover:text-accent hover:bg-accent/8'}
-              `}
-            >
-              {item.isHeader ? 'T' : 'H'}
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.85 }}
-              onClick={() => setEditing(true)}
-              title="編集"
-              className={`
-                w-10 h-10 flex items-center justify-center transition-colors
-                ${item.isHeader ? 'text-white/70 hover:text-white hover:bg-white/20' : 'text-ink-faint hover:text-ink-muted hover:bg-black/6'}
-              `}
-            >
-              <svg width="18" height="18" viewBox="0 0 12 12" fill="none">
-                <path d="M8.5 1.5L10.5 3.5L4 10H2V8L8.5 1.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.85 }}
-              onClick={handleDelete}
-              title="削除"
-              className={`
-                w-10 h-10 flex items-center justify-center transition-colors
-                ${item.isHeader ? 'text-white/70 hover:text-white hover:bg-white/20' : 'text-ink-faint hover:text-red-500 hover:bg-red-50'}
-              `}
-            >
-              <svg width="16" height="18" viewBox="0 0 11 12" fill="none">
-                <path d="M1 3H10M4 3V2H7V3M2 3L3 10H8L9 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </motion.button>
-          </div>
+          <TodoItemActions
+            isHeader={item.isHeader}
+            tabId={tabId}
+            itemId={item.id}
+            onEdit={() => setEditing(true)}
+            onDelete={handleDelete}
+            toggleRole={toggleRole}
+          />
         </div>
       </div>
     </Reorder.Item>
   )
 }
+

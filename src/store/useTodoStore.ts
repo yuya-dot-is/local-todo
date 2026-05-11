@@ -12,6 +12,7 @@ const defaultTab = (): Tab => ({
     checked: false,
     createdAt: Date.now(),
     isCaret: true,
+    isHeader: false
   }],
 })
 
@@ -27,8 +28,8 @@ export const useTodoStore = create<TodoStore>()(
       stopwatchAccumulatedTime: 0,
 
       setShowInfoTab: (show) => set({ showInfoTab: show }),
-      setStopwatch: (active) => set({ 
-        stopwatchActive: active, 
+      setStopwatch: (active) => set({
+        stopwatchActive: active,
         stopwatchPaused: false,
         stopwatchStartTime: active ? Date.now() : null,
         stopwatchAccumulatedTime: 0
@@ -82,13 +83,18 @@ export const useTodoStore = create<TodoStore>()(
         set((s) => ({
           tabs: s.tabs.map((tab) => {
             if (tab.id !== tabId) return tab
-            
+
             // Ensure caret exists
             let todos = [...tab.todos]
             let caretIdx = todos.findIndex(t => t.isCaret)
             if (caretIdx === -1) {
               const newCaret: TodoItem = {
-                id: `caret-${nanoid()}`, title: '', checked: false, createdAt: Date.now(), isCaret: true
+                id: `caret-${nanoid()}`,
+                title: '',
+                checked: false,
+                createdAt: Date.now(),
+                isHeader: false,
+                isCaret: true
               }
               todos.push(newCaret)
               caretIdx = todos.length - 1
@@ -100,9 +106,10 @@ export const useTodoStore = create<TodoStore>()(
               checked: false,
               createdAt: Date.now(),
               isHeader,
+              isCaret: false,
               estimate,
             }
-            
+
             // Insert exactly before the caret
             todos.splice(caretIdx, 0, newItem)
 
