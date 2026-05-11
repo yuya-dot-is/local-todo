@@ -15,15 +15,8 @@ export const useTodoStore = create<TodoStore>()(
     (set) => ({
       todos: initialTodos(),
       editingTodoId: null,
-      editingValue: '',
 
-      setEditingTodoId: (id) => set((s) => ({
-        editingTodoId: id,
-        // When switching to a new task, seed editingValue from that task's title
-        editingValue: id ? (s.todos.find(t => t.id === id)?.title ?? '') : ''
-      })),
-
-      setEditingValue: (value) => set({ editingValue: value }),
+      setEditingTodoId: (id) => set({ editingTodoId: id }),
 
       addTodo: (title) =>
         set((s) => {
@@ -69,9 +62,9 @@ export const useTodoStore = create<TodoStore>()(
       reorderTodos: (newTodos) =>
         set({ todos: newTodos }),
     }),
-    { 
+    {
       name: 'local-todo-storage',
-      partialize: (state) => ({ todos: state.todos }) // Don't persist editing state
+      partialize: (state) => ({ todos: state.todos })
     }
   )
 )

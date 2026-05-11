@@ -12,14 +12,36 @@ interface Props {
 }
 
 export default function TodoItem({ item }: Props) {
-  const { toggleTodo, deleteTodo, editingTodoId, editingValue, setEditingTodoId } = useTodoStore()
+  const { toggleTodo, deleteTodo, editingTodoId, setEditingTodoId, editTodo } = useTodoStore()
   const [isDraggable, setIsDraggable] = useState(false)
+  const [editValue, setEditValue] = useState(item.title)
   const dragControls = useDragControls()
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const itemRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const isEditing = editingTodoId === item.id
   const isAnyEditing = editingTodoId !== null
-  const displayTitle = isEditing ? editingValue : item.title
+
+  // Sync editValue when entering edit mode
+  useEffect(() => {
+    if (!isEditing) return
+    setEditValue(item.title)
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus()
+        const len = item.title.length
+        textareaRef.current.setSelectionRange(len, len)
+        textareaRef.current.style.height = 'auto'
+        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
+      }
+    }, 0)
+  }, [isEditing]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const commitEdit = () => {
+    const value = editValue.trim()
+    if (value) editTodo(item.id, value)
+    else setEditValue(item.title) // revert if empty
+    setEditingTodoId(null)
+  }
 
   const handleCheck = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
@@ -46,15 +68,6 @@ export default function TodoItem({ item }: Props) {
       timerRef.current = null
     }
   }
-
-  // Scroll editing item into view when keyboard appears
-  useEffect(() => {
-    if (!isEditing || !itemRef.current) return
-    const t = setTimeout(() => {
-      itemRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 300)
-    return () => clearTimeout(t)
-  }, [isEditing])
 
   useEffect(() => () => clearTimer(), [])
 
@@ -87,21 +100,43 @@ export default function TodoItem({ item }: Props) {
       transition={{ type: 'spring', stiffness: 400, damping: 30, opacity: { duration: 0.15 } }}
     >
       <div
-        ref={itemRef}
         onPointerDown={onPointerDown}
         onPointerUp={clearTimer}
         onPointerCancel={clearTimer}
         onPointerMove={onPointerMove}
         onClick={() => { if (!isAnyEditing) setEditingTodoId(item.id) }}
-        className={`flex items-center gap-3 py-3 px-2 transition-colors duration-150${isEditing ? ' ring-1 ring-inset ring-accent/30' : ' hover:bg-black/[0.02]'}${dimmed ? ' pointer-events-none' : ''}`}
+        className={`flex items-start gap-3 py-3 px-2 transition-colors duration-150${isEditing ? ' ring-1 ring-inset ring-accent/30' : ' hover:bg-black/[0.02]'}${dimmed ? ' pointer-events-none' : ''}`}
       >
-        <TodoItemCheckbox checked={item.checked} handleCheck={handleCheck} />
-
-        <div className="flex-1 min-w-0">
-          <TodoItemTitle title={displayTitle} checked={item.checked} />
+        <div className="mt-1 flex-shrink-0">
+          <TodoItemCheckbox checked={item.checked} handleCheck={handleCheck} />
         </div>
 
-        {/* Only show delete button when not in editing mode */}
+        <div className="flex-1 min-w-0">
+          {isEditing ? (
+            <textarea
+              ref={textareaRef}
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onBlur={commitEdit}
+              onKeyDown={(e) => {
+                if (e.nativeEvent.isComposing) return
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commitEdit() }
+                if (e.key === 'Escape') { setEditValue(item.title); setEditingTodoId(null) }
+              }}
+              rows={1}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full bg-transparent text-sm text-ink outline-none resize-none leading-relaxed"
+              onInput={(e) => {
+                const el = e.target as HTMLTextAreaElement
+                el.style.height = 'auto'
+                el.style.height = `${el.scrollHeight}px`
+              }}
+            />
+          ) : (
+            <TodoItemTitle title={item.title} checked={item.checked} />
+          )}
+        </div>
+
         {!isAnyEditing && (
           <TodoItemActions onDelete={() => deleteTodo(item.id)} />
         )}
