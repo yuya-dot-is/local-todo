@@ -39,9 +39,13 @@ export default function TodoItemCaret({ item }: Props) {
     timerRef.current = setTimeout(() => {
       window.getSelection()?.removeAllRanges()
       setIsDraggable(true)
-      setIsDragging(true)
+      setIsDragging(true) // ここでアプリ全体を select-none に切り替え
       dragControls.start(e)
     }, 500)
+  }
+
+  const onPointerMove = () => {
+    if (!isDraggable && timerRef.current) clearTimer()
   }
 
   const clearTimer = () => {
@@ -71,7 +75,7 @@ export default function TodoItemCaret({ item }: Props) {
       }}
       onDragEnd={() => {
         setIsDraggable(false)
-        setIsDragging(false)
+        setIsDragging(false) // ドラッグ終了をアプリに通知
         clearTimer()
       }}
     >
@@ -93,12 +97,12 @@ export default function TodoItemCaret({ item }: Props) {
             }}
             placeholder="タスクを追加…"
             rows={1}
-            className="flex-1 bg-transparent text-sm text-ink outline-none resize-none leading-relaxed block"
+            className="flex-1 bg-transparent text-sm text-ink placeholder-ink-faint outline-none resize-none leading-relaxed block"
           />
           <button
             onMouseDown={(e) => e.preventDefault()}
             onClick={handleSubmit}
-            className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full bg-accent text-white text-xl leading-none shadow-sm active:scale-90 transition-transform"
+            className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full bg-accent text-white text-lg leading-none shadow-sm active:scale-90 transition-transform"
           >
             ↑
           </button>
@@ -109,12 +113,14 @@ export default function TodoItemCaret({ item }: Props) {
           onPointerDown={onPointerDown}
           onPointerUp={clearTimer}
           onPointerCancel={clearTimer}
-          className="flex items-center px-2 h-12 hover:bg-black/[0.02] transition-colors"
+          onPointerMove={onPointerMove}
+          className="flex items-center px-2 h-10 hover:bg-black/[0.02] transition-colors"
         >
-          <div className="flex-1 h-px bg-accent/20 mr-4" />
+          <div className="flex-1 h-px bg-accent/10 mr-4" />
           <button
             onClick={handlePlusClick}
-            className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full border-2 border-accent/40 text-accent/70 hover:border-accent hover:text-accent hover:bg-accent/5 transition-all text-2xl leading-none active:scale-90"
+            // デザイン調整: w-8 h-8 に小型化、ボーダーを細く (border)、背景色 (bg-accent/[0.03]) を追加
+            className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full border border-accent/30 text-accent/60 bg-accent/[0.03] hover:border-accent/60 hover:text-accent hover:bg-accent/10 transition-all text-xl font-light active:scale-90"
           >
             +
           </button>
