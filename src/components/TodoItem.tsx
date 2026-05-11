@@ -133,9 +133,11 @@ export default function TodoItem({ item }: Props) {
         onClick={handleItemClick}
         className={`flex items-center gap-3 py-3 px-2 transition-colors duration-150${isEditing ? ' ring-1 ring-inset ring-accent/30' : ' hover:bg-black/[0.02]'}${dimmed ? ' pointer-events-none' : ''}`}
       >
-        <div className="flex-shrink-0">
-          <TodoItemCheckbox checked={item.checked} handleCheck={handleCheck} />
-        </div>
+        {!isEditing && (
+          <div className="flex-shrink-0">
+            <TodoItemCheckbox checked={item.checked} handleCheck={handleCheck} />
+          </div>
+        )}
 
         <div className="flex-1 min-w-0">
           {isEditing ? (
