@@ -19,7 +19,7 @@ export default function TodoItemCaret({ item }: Props) {
   const dragControls = useDragControls()
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
-  const isSubmittingRef = useRef(false) // 送信中フラグ
+  const isSubmittingRef = useRef(false)
 
   const handleSubmit = (keepOpen = true) => {
     const value = inputValue.trim()
@@ -34,7 +34,6 @@ export default function TodoItemCaret({ item }: Props) {
       }
 
       if (keepOpen) {
-        // flushSync を使わずに、次のレンダリングサイクルで確実にフォーカス
         setTimeout(() => {
           inputRef.current?.focus()
           isSubmittingRef.current = false
@@ -94,22 +93,20 @@ export default function TodoItemCaret({ item }: Props) {
       layout
       dragListener={false}
       dragControls={dragControls}
+      style={{ zIndex: isDraggable ? 100 : 0, position: 'relative' }}
       className={`group${isAnyEditing ? ' opacity-30 pointer-events-none' : ''}`}
       animate={{
         backgroundColor: isDraggable ? '#f0fdf4' : 'transparent',
         scale: isDraggable ? 1.04 : 1,
-        zIndex: isDraggable ? 100 : 0,
         boxShadow: isDraggable
           ? '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)'
           : '0 0 0 0 rgba(0,0,0,0)'
       }}
       whileDrag={{
-        zIndex: 100,
         scale: 1.04,
         backgroundColor: '#f0fdf4',
         boxShadow: '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)'
       }}
-      transition={{ zIndex: { duration: 0 } }}
       onDragEnd={handleEnd}
     >
       {isInputMode ? (
@@ -119,7 +116,6 @@ export default function TodoItemCaret({ item }: Props) {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onBlur={() => {
-              // 送信中（Enter押下直後など）のBlurは無視する
               if (!isSubmittingRef.current) {
                 handleSubmit(false)
               }

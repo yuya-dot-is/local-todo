@@ -14,7 +14,7 @@ export default function TodoList() {
           onReorder={reorderTodos}
           className="flex flex-col gap-0.5"
         >
-          <AnimatePresence initial={false}>
+          <AnimatePresence mode="popLayout" initial={false}>
             {todos.map((todo) => (
               <TodoItemComponent key={todo.id} item={todo} />
             ))}

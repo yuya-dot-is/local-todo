@@ -112,20 +112,19 @@ export default function TodoItem({ item }: Props) {
       layout
       dragListener={false}
       dragControls={dragControls}
-      className="group relative"
+      // style プロパティで zIndex を直接指定してチラつきを防止
+      style={{ zIndex: isDraggable ? 100 : 0, position: 'relative' }}
+      className="group"
       initial={{ opacity: 0 }}
       animate={{
         opacity: dimmed ? 0.3 : 1,
         backgroundColor: isEditing || isDraggable ? '#f0fdf4' : '#ffffff',
         scale: isDraggable ? 1.04 : 1,
-        // zIndex は whileDrag で制御し、準備中も 100 にしておく
-        zIndex: isDraggable ? 100 : 0,
         boxShadow: isDraggable
           ? '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)'
           : '0 0 0 0 rgba(0,0,0,0)'
       }}
       whileDrag={{
-        zIndex: 100,
         scale: 1.04,
         boxShadow: '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)'
       }}
@@ -135,8 +134,7 @@ export default function TodoItem({ item }: Props) {
         type: 'spring', 
         stiffness: 400, 
         damping: 30, 
-        opacity: { duration: 0.15 },
-        zIndex: { duration: 0 } // zIndex の切り替えは即座に行う
+        opacity: { duration: 0.15 }
       }}
     >
       <div
