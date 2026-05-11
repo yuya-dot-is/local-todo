@@ -25,4 +25,6 @@ export interface TodoStore {
   toggleTodo: (tabId: string, todoId: string) => void
   deleteTodo: (tabId: string, todoId: string) => void
   reorderTodos: (tabId: string, parentId: string | null, from: number, to: number) => void
+  indentTodo: (tabId: string, todoId: string) => void
+  outdentTodo: (tabId: string, todoId: string) => void
 }

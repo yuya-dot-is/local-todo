@@ -1,12 +1,13 @@
 export default function DataNotice() {
   return (
-    <footer className="flex items-center justify-center gap-2 py-3 px-4">
-      <span className="w-1.5 h-1.5 rounded-full bg-green-400/70 flex-shrink-0" />
-      <p className="text-[11px] text-white/30 text-center">
+    <div className="flex items-center gap-2 px-4 py-2 mx-4 mb-2 rounded-xl
+      bg-accent/8 border border-accent/20">
+      <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 animate-pulse" />
+      <p className="text-[11px] text-accent/80 leading-snug">
         データはこのブラウザにのみ保存されます
-        <span className="mx-1 text-white/15">·</span>
-        <span className="text-white/20">Your data is saved locally in this browser only</span>
+        <span className="mx-1.5 text-accent/30">·</span>
+        <span className="text-accent/60">Your data is saved locally in this browser only</span>
       </p>
-    </footer>
+    </div>
   )
 }

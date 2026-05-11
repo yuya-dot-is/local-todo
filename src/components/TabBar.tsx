@@ -19,9 +19,7 @@ export default function TabBar() {
   }
 
   const commitEdit = () => {
-    if (editingId && editValue.trim()) {
-      renameTab(editingId, editValue.trim())
-    }
+    if (editingId && editValue.trim()) renameTab(editingId, editValue.trim())
     setEditingId(null)
   }
 
@@ -29,7 +27,6 @@ export default function TabBar() {
     const from = tabs.findIndex((t) => !newOrder.includes(t))
     const to = newOrder.findIndex((t) => !tabs.includes(t))
     if (from !== -1 && to !== -1) reorderTabs(from, to)
-    // Zustand state is source of truth; Reorder handles visual order
   }
 
   return (
@@ -48,17 +45,17 @@ export default function TabBar() {
               <Reorder.Item key={tab.id} value={tab} as="div">
                 <motion.div
                   layout
-                  initial={{ opacity: 0, scale: 0.8 }}
+                  initial={{ opacity: 0, scale: 0.85 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
+                  exit={{ opacity: 0, scale: 0.85 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                   className={`
-                    relative flex items-center gap-1 px-3 py-2 rounded-t-lg cursor-pointer
+                    relative flex items-center gap-1 px-4 py-2 rounded-t-xl cursor-pointer
                     text-sm font-medium select-none whitespace-nowrap
                     border border-b-0 transition-colors
                     ${isActive
-                      ? 'bg-surface-2 border-white/10 text-white'
-                      : 'bg-surface-1/60 border-transparent text-white/50 hover:text-white/80'
+                      ? 'bg-white border-black/8 text-ink shadow-tab'
+                      : 'bg-surface-2/70 border-transparent text-ink-muted hover:text-ink hover:bg-white/60'
                     }
                   `}
                   onClick={() => setActiveTab(idx)}
@@ -75,7 +72,7 @@ export default function TabBar() {
                         if (e.key === 'Escape') setEditingId(null)
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      className="bg-transparent outline-none w-24 text-white"
+                      className="bg-transparent outline-none w-24 text-ink"
                     />
                   ) : (
                     <span className="max-w-[120px] truncate">{tab.name}</span>
@@ -88,7 +85,7 @@ export default function TabBar() {
                         deleteTab(tab.id)
                       }}
                       className="ml-1 w-4 h-4 flex items-center justify-center rounded-full
-                        text-white/30 hover:text-white/80 hover:bg-white/10 transition-colors"
+                        text-ink-faint hover:text-ink-muted hover:bg-black/8 transition-colors"
                       aria-label="Delete tab"
                     >
                       ×
@@ -106,7 +103,7 @@ export default function TabBar() {
         whileTap={{ scale: 0.9 }}
         onClick={addTab}
         className="ml-1 w-8 h-8 flex items-center justify-center rounded-lg
-          text-white/40 hover:text-white hover:bg-white/10 transition-colors text-lg flex-shrink-0"
+          text-ink-faint hover:text-ink-muted hover:bg-black/8 transition-colors text-lg flex-shrink-0"
         aria-label="Add tab"
       >
         +

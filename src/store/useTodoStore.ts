@@ -31,6 +31,30 @@ function findParentList(
   return null
 }
 
+interface FoundItem {
+  item: TodoItem
+  siblings: TodoItem[]
+  index: number
+  parentSiblings: TodoItem[] | null
+  parentIndex: number
+}
+
+function findItemWithParent(
+  todos: TodoItem[],
+  id: string,
+  parentSiblings: TodoItem[] | null = null,
+  parentIndex: number = -1,
+): FoundItem | null {
+  for (let i = 0; i < todos.length; i++) {
+    if (todos[i].id === id) {
+      return { item: todos[i], siblings: todos, index: i, parentSiblings, parentIndex }
+    }
+    const found = findItemWithParent(todos[i].children, id, todos, i)
+    if (found) return found
+  }
+  return null
+}
+
 const defaultTab = (): Tab => ({
   id: nanoid(),
   name: 'My Tasks',
@@ -128,6 +152,38 @@ export const useTodoStore = create<TodoStore>()(
             if (!list) return tab
             const [moved] = list.splice(from, 1)
             list.splice(to, 0, moved)
+            return { ...tab, todos }
+          }),
+        })),
+
+      // Move todo under its previous sibling's children (depth + 1)
+      indentTodo: (tabId, todoId) =>
+        set((s) => ({
+          tabs: s.tabs.map((tab) => {
+            if (tab.id !== tabId) return tab
+            const todos = structuredClone(tab.todos)
+            const found = findItemWithParent(todos, todoId)
+            if (!found) return tab
+            const { item, siblings, index } = found
+            if (index === 0) return tab // no previous sibling
+            const prevSibling = siblings[index - 1]
+            siblings.splice(index, 1)
+            prevSibling.children.push(item)
+            return { ...tab, todos }
+          }),
+        })),
+
+      // Promote todo to parent's level, inserted after parent
+      outdentTodo: (tabId, todoId) =>
+        set((s) => ({
+          tabs: s.tabs.map((tab) => {
+            if (tab.id !== tabId) return tab
+            const todos = structuredClone(tab.todos)
+            const found = findItemWithParent(todos, todoId)
+            if (!found || !found.parentSiblings) return tab
+            const { item, siblings, index, parentSiblings, parentIndex } = found
+            siblings.splice(index, 1)
+            parentSiblings.splice(parentIndex + 1, 0, item)
             return { ...tab, todos }
           }),
         })),

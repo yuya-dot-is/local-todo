@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   html {
@@ -14,7 +14,7 @@
   }
 
   body {
-    @apply bg-surface-0 text-white;
+    @apply bg-surface-0 text-ink;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -24,10 +24,6 @@
 }
 
 @layer utilities {
-  .border-white\/8 {
-    border-color: rgba(255, 255, 255, 0.08);
-  }
-
   /* custom scrollbar */
   ::-webkit-scrollbar {
     width: 4px;
@@ -37,13 +33,14 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-white/10 rounded-full;
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-white/20;
+    background: rgba(0, 0, 0, 0.22);
   }
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.1) transparent;
+    scrollbar-color: rgba(0, 0, 0, 0.12) transparent;
   }
 }
