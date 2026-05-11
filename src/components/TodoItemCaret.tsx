@@ -76,7 +76,7 @@ export default function TodoItemCaret({ item }: Props) {
       animate={{
         backgroundColor: isDraggable ? '#f0fdf4' : 'transparent',
         scale: isDraggable ? 1.04 : 1,
-        zIndex: isDraggable ? 50 : 0,
+        zIndex: isDraggable ? 100 : 0,
         boxShadow: isDraggable
           ? '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)'
           : '0 0 0 0 rgba(0,0,0,0)'
