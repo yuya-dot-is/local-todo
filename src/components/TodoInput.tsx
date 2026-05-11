@@ -18,12 +18,9 @@ export default function TodoInput({ onAdd }: Props) {
   return (
     <div
       className={`
-        mb-3 flex items-start gap-3 px-4 py-4
-        border transition-all duration-200
-        ${focused
-          ? 'border-accent/40 bg-accent/4 shadow-sm'
-          : 'border-black/8 bg-surface-2 hover:border-black/12'
-        }
+        flex items-center gap-2 p-2
+        bg-white border-t transition-all duration-200
+        ${focused ? 'border-accent shadow-[0_-4px_12px_rgba(0,0,0,0.05)]' : 'border-black/5'}
       `}
     >
       <textarea
@@ -40,7 +37,7 @@ export default function TodoInput({ onAdd }: Props) {
         }}
         placeholder="タスクを追加…"
         rows={1}
-        className="flex-1 bg-transparent text-base text-ink placeholder-ink-faint outline-none resize-none py-1 leading-relaxed min-h-[1.75rem] max-h-[6rem]"
+        className="flex-1 bg-surface-2 text-base text-ink placeholder-ink-faint outline-none resize-none px-4 py-2.5 rounded-full leading-tight min-h-[44px] max-h-[120px]"
         onInput={(e) => {
           const target = e.target as HTMLTextAreaElement
           target.style.height = 'auto'
@@ -48,21 +45,19 @@ export default function TodoInput({ onAdd }: Props) {
         }}
       />
 
-      <div className="flex items-center gap-1.5 mt-0.5">
-        <button
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={handleAdd}
-          disabled={!inputValue.trim()}
-          className={`
-            px-4 py-2 text-xs font-bold transition-colors min-h-[44px]
-            ${inputValue.trim()
-              ? 'bg-accent text-white hover:bg-accent-hover'
-              : 'bg-black/10 text-ink-faint cursor-not-allowed opacity-50'}
-          `}
-        >
-          + タスク
-        </button>
-      </div>
+      <button
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={handleAdd}
+        disabled={!inputValue.trim()}
+        className={`
+          w-11 h-11 flex items-center justify-center rounded-full text-2xl font-light transition-all
+          ${inputValue.trim()
+            ? 'bg-accent text-white shadow-md active:scale-95'
+            : 'bg-black/5 text-ink-faint cursor-not-allowed'}
+        `}
+      >
+        +
+      </button>
     </div>
   )
 }
