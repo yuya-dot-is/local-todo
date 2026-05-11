@@ -23,7 +23,7 @@ export default function TodoList() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 relative">
-      <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin pb-24">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin pb-[80vh]">
         <Reorder.Group
           axis="y"
           values={todos}

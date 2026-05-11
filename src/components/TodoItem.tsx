@@ -51,7 +51,7 @@ export default function TodoItem({ item }: Props) {
   useEffect(() => {
     if (!isEditing || !itemRef.current) return
     const t = setTimeout(() => {
-      itemRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      itemRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 300)
     return () => clearTimeout(t)
   }, [isEditing])
