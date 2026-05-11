@@ -1,0 +1,9 @@
+name = "local-todo"
+compatibility_date = "2024-01-01"
+
+[env.production]
+name = "local-todo"
+
+[[env.production.assets.rules]]
+type = "Text"
+extensions = ["html", "css", "js", "json", "png", "svg", "ico", "woff2"]
