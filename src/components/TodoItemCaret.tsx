@@ -20,12 +20,29 @@ export default function TodoItemCaret({ item }: Props) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  const handleSubmit = () => {
-    if (inputValue.trim()) {
-      addTodo(inputValue.trim())
+  const handleSubmit = (keepOpen = true) => {
+    const value = inputValue.trim()
+    if (value) {
+      addTodo(value)
+      setInputValue('')
+      
+      // 入力フォームの高さをリセット
+      if (inputRef.current) {
+        inputRef.current.style.height = 'auto'
+      }
+      
+      // 連続追加の場合はフォーカスを維持
+      if (keepOpen) {
+        setTimeout(() => inputRef.current?.focus(), 0)
+        return
+      }
+    }
+    
+    // 値が空、または明示的に閉じる場合
+    if (!keepOpen || !value) {
+      setIsInputMode(false)
       setInputValue('')
     }
-    setIsInputMode(false)
   }
 
   const handlePlusClick = (e: React.MouseEvent) => {
@@ -87,9 +104,7 @@ export default function TodoItemCaret({ item }: Props) {
         backgroundColor: '#f0fdf4',
         boxShadow: '0 20px 40px -10px rgba(0,0,0,0.2), 0 10px 20px -5px rgba(0,0,0,0.1)'
       }}
-      transition={{ 
-        zIndex: { duration: 0 } 
-      }}
+      transition={{ zIndex: { duration: 0 } }}
       onDragEnd={handleEnd}
     >
       {isInputMode ? (
@@ -97,13 +112,20 @@ export default function TodoItemCaret({ item }: Props) {
           <textarea
             ref={inputRef}
             value={inputValue}
-            onChange={(e) => {
-              setInputValue(e.target.value)
-            }}
-            onBlur={handleSubmit}
+            onChange={(e) => setInputValue(e.target.value)}
+            // フォーカスが外れた時は保存して閉じる
+            onBlur={() => handleSubmit(false)}
             onKeyDown={(e) => {
               if (e.nativeEvent.isComposing) return
-              if (e.key === 'Escape') { setInputValue(''); setIsInputMode(false) }
+              // Enter 単体で追加（フォームは開いたまま）
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleSubmit(true)
+              }
+              if (e.key === 'Escape') { 
+                setInputValue('')
+                setIsInputMode(false) 
+              }
             }}
             placeholder="タスクを追加…"
             rows={1}
@@ -115,8 +137,9 @@ export default function TodoItemCaret({ item }: Props) {
             }}
           />
           <button
+            // buttonクリック時は連続追加を想定
             onMouseDown={(e) => e.preventDefault()}
-            onClick={handleSubmit}
+            onClick={() => handleSubmit(true)}
             className="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-full bg-accent text-white text-lg leading-none shadow-sm active:scale-90 transition-transform"
           >
             ↑
