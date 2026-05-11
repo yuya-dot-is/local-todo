@@ -3,28 +3,21 @@ import { useRef, useEffect } from 'react'
 interface Props {
   editValue: string
   setEditValue: (val: string) => void
-  editEstimate: string
-  setEditEstimate: (val: string) => void
   commitEdit: () => void
   cancelEdit: () => void
-  isHeader: boolean
 }
 
 export default function TodoItemEditor({
   editValue,
   setEditValue,
-  editEstimate,
-  setEditEstimate,
   commitEdit,
   cancelEdit,
-  isHeader,
 }: Props) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.select()
-      // Trigger initial height adjustment
       inputRef.current.style.height = 'auto'
       inputRef.current.style.height = `${inputRef.current.scrollHeight}px`
     }
@@ -56,15 +49,6 @@ export default function TodoItemEditor({
           target.style.height = `${target.scrollHeight}px`
         }}
       />
-      {!isHeader && (
-        <input
-          value={editEstimate}
-          onChange={(e) => setEditEstimate(e.target.value)}
-          onBlur={commitEdit}
-          placeholder="作業時間（分）"
-          className="w-24 bg-surface-2 px-2 py-0.5 text-[10px] text-ink outline-none border border-black/5"
-        />
-      )}
     </div>
   )
 }

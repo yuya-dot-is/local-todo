@@ -1,19 +1,17 @@
 import { useState } from 'react'
 
 interface Props {
-  onAdd: (title: string, isHeader: boolean, estimate: string) => void
+  onAdd: (title: string) => void
 }
 
 export default function TodoInput({ onAdd }: Props) {
   const [inputValue, setInputValue] = useState('')
-  const [estimateValue, setEstimateValue] = useState('')
   const [focused, setFocused] = useState(false)
 
-  const handleAdd = (isHeader: boolean = false) => {
+  const handleAdd = () => {
     if (inputValue.trim()) {
-      onAdd(inputValue.trim(), isHeader, isHeader ? '' : estimateValue.trim())
+      onAdd(inputValue.trim())
       setInputValue('')
-      setEstimateValue('')
     }
   }
 
@@ -37,7 +35,7 @@ export default function TodoInput({ onAdd }: Props) {
           if (e.nativeEvent.isComposing) return
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault()
-            handleAdd(false)
+            handleAdd()
           }
         }}
         placeholder="タスクを追加…"
@@ -50,32 +48,10 @@ export default function TodoInput({ onAdd }: Props) {
         }}
       />
 
-      <input
-        value={estimateValue}
-        onChange={(e) => setEstimateValue(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        placeholder="作業時間（分）"
-        className="w-24 bg-white/50 text-[11px] text-ink px-2 py-1 border border-black/5 outline-none focus:border-accent/30 mt-0.5"
-      />
-
       <div className="flex items-center gap-1.5 mt-0.5">
         <button
           onMouseDown={(e) => e.preventDefault()}
-          onClick={() => handleAdd(true)}
-          disabled={!inputValue.trim()}
-          className={`
-            px-3 py-2 text-xs font-bold transition-colors min-h-[44px]
-            ${inputValue.trim()
-              ? 'bg-accent/10 text-accent hover:bg-accent/20'
-              : 'bg-black/5 text-ink-faint cursor-not-allowed opacity-50'}
-          `}
-        >
-          + ヘッダー
-        </button>
-        <button
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => handleAdd(false)}
+          onClick={handleAdd}
           disabled={!inputValue.trim()}
           className={`
             px-4 py-2 text-xs font-bold transition-colors min-h-[44px]
